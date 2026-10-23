@@ -11,6 +11,9 @@
  *   pnpm import:wp --only=posts --since=2026-10-01
  *   pnpm import:wp --only=pages
  *   pnpm import:wp --skip-media            # don't download images (faster test)
+ *
+ * Options can also be given as environment variables: IMPORT_LIMIT, IMPORT_ONLY, IMPORT_SINCE,
+ * IMPORT_SKIP_MEDIA=true.
  */
 import { convertHTMLToLexical, editorConfigFactory } from '@payloadcms/richtext-lexical'
 import { JSDOM } from 'jsdom'
@@ -23,8 +26,9 @@ import { htmlToText } from '../utilities/text'
 // ---------- CLI ----------
 const arg = (name: string) => {
   const hit = process.argv.find((a) => a === `--${name}` || a.startsWith(`--${name}=`))
-  if (!hit) return undefined
-  return hit.includes('=') ? hit.split('=').slice(1).join('=') : 'true'
+  if (hit) return hit.includes('=') ? hit.split('=').slice(1).join('=') : 'true'
+  const env = process.env[`IMPORT_${name.toUpperCase().replace(/-/g, '_')}`]
+  return env || undefined
 }
 const LIMIT = arg('limit') ? Number(arg('limit')) : Infinity
 const ONLY = arg('only') // posts | pages | taxonomies | authors
@@ -425,7 +429,9 @@ const run = async () => {
   process.exit(counts.postErrors || counts.pageErrors ? 1 : 0)
 }
 
-run().catch((err) => {
+try {
+  await run()
+} catch (err) {
   console.error(err)
   process.exit(1)
-})
+}
