@@ -1,18 +1,15 @@
 name: Import from WordPress
 
-# Copies all articles, pages, categories, tags, authors and images from canadiansme.ca into the
-# live CMS database. READ-ONLY on WordPress. Safe to re-run (updates, never duplicates).
-#
-# Start it by pushing any commit to the `run-import` branch, or from the Actions tab.
-# Needs two repository secrets (Settings > Secrets and variables > Actions):
-#   DATABASE_URL           - the Neon connection string (same as in Vercel)
-#   BLOB_READ_WRITE_TOKEN  - from Vercel > Storage > canadiansme-cms-blob (so images go to Blob)
+# Copies articles, pages, categories, tags, authors and images from canadiansme.ca into the live
+# CMS database. READ-ONLY on WordPress. Safe to re-run (updates, never duplicates).
+# Start: push any commit to the `run-import` branch, or use the Actions tab.
+# Needs repository secrets DATABASE_URL and BLOB_READ_WRITE_TOKEN.
 
 on:
   workflow_dispatch:
     inputs:
       args:
-        description: 'Importer options, e.g. --skip-existing or --only=posts --since=2026-10-01'
+        description: 'Importer options'
         required: false
         default: '--skip-existing'
   push:
@@ -46,11 +43,10 @@ jobs:
           node-version: '24'
       - name: Check secrets
         run: |
-          if [ -z "$DATABASE_URL" ]; then echo "::error::Add the DATABASE_URL repository secret first"; exit 1; fi
-          if [ -z "$BLOB_READ_WRITE_TOKEN" ]; then echo "::error::Add the BLOB_READ_WRITE_TOKEN repository secret first"; exit 1; fi
+          if [ -z "$DATABASE_URL" ]; then echo "::error::Add the DATABASE_URL repository secret"; exit 1; fi
+          if [ -z "$BLOB_READ_WRITE_TOKEN" ]; then echo "::error::Add the BLOB_READ_WRITE_TOKEN repository secret"; exit 1; fi
       - run: pnpm install --frozen-lockfile
-      - name: Apply database migrations
-        run: pnpm migrate
+      - run: pnpm migrate
       - name: Import (read-only from WordPress)
         run: |
           mkdir -p out
