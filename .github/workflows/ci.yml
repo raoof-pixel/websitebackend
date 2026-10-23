@@ -1,0 +1,133 @@
+name: CI
+
+# Installs, type-checks, builds and runs the smoke + security tests against a real Postgres
+# database on every push. Results are published to the `ci-results` branch; generated files
+# (lockfile, types, import map, database migration) to the `ci-generated` branch.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: payload
+          POSTGRES_PASSWORD: payload
+          POSTGRES_DB: payload
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U payload" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://payload:payload@localhost:5432/payload
+      PAYLOAD_SECRET: ci-only-secret-0123456789abcdef0123456789abcdef
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_URL: http://localhost:3001
+      CRON_SECRET: ci-cron-secret
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Prepare output folder
+        run: mkdir -p ci-output
+
+      - name: Install
+        run: |
+          set -o pipefail
+          if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile 2>&1 | tee ci-output/01-install.log
+          else pnpm install --no-frozen-lockfile 2>&1 | tee ci-output/01-install.log; fi
+
+      - name: Dependency vulnerability audit
+        continue-on-error: true
+        run: pnpm audit --prod 2>&1 | tee ci-output/02-audit.log
+
+      - name: Generate types and import map
+        run: |
+          set -o pipefail
+          (pnpm generate:types && pnpm generate:importmap) 2>&1 | tee ci-output/03-generate.log
+
+      - name: Type-check
+        run: |
+          set -o pipefail
+          pnpm typecheck 2>&1 | tee ci-output/04-typecheck.log
+
+      - name: Create initial database migration (first run only)
+        run: |
+          set -o pipefail
+          if ! ls src/migrations/*.ts >/dev/null 2>&1; then
+            pnpm payload migrate:create initial --force-accept-warning 2>&1 | tee ci-output/05-migrate-create.log
+          else
+            pnpm payload migrate:create --skip-empty --force-accept-warning 2>&1 | tee ci-output/05-migrate-create.log
+          fi
+
+      - name: Run migrations
+        run: |
+          set -o pipefail
+          pnpm migrate 2>&1 | tee ci-output/06-migrate.log
+
+      - name: Production build
+        run: |
+          set -o pipefail
+          pnpm build 2>&1 | tee ci-output/07-build.log
+
+      - name: Start server and run smoke + security tests
+        run: |
+          set -o pipefail
+          NODE_ENV=production pnpm start > ci-output/08-server.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/api/health && break; sleep 2; done
+          BASE_URL=http://localhost:3000 node tests/smoke.mjs 2>&1 | tee ci-output/09-smoke.log
+
+      - name: Test WordPress import (read-only, newest 15 articles)
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm import:wp --limit=15 2>&1 | tee ci-output/10-import.log
+          curl -s "http://localhost:3000/api/posts?limit=15&depth=0&select[title]=true&select[slug]=true&select[useLegacyHtml]=true&select[_status]=true" > ci-output/11-imported-posts.json || true
+
+      - name: Publish results
+        if: always()
+        run: |
+          echo "commit: ${GITHUB_SHA}" > ci-output/00-summary.txt
+          echo "run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >> ci-output/00-summary.txt
+          echo "status: ${{ job.status }}" >> ci-output/00-summary.txt
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          # Generated files -> ci-generated branch (reviewed and merged by hand)
+          mkdir -p /tmp/gen
+          cp pnpm-lock.yaml /tmp/gen/ 2>/dev/null || true
+          cp src/payload-types.ts /tmp/gen/ 2>/dev/null || true
+          cp "src/app/(payload)/admin/importMap.js" /tmp/gen/ 2>/dev/null || true
+          cp -r src/migrations /tmp/gen/ 2>/dev/null || true
+          cp -r ci-output /tmp/ci-output
+          git fetch origin ci-results ci-generated 2>/dev/null || true
+          git checkout --orphan ci-results-tmp
+          git rm -rf --cached . >/dev/null
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -r /tmp/ci-output/* .
+          git add -A && git commit -qm "CI results for ${GITHUB_SHA}"
+          git push -f origin HEAD:ci-results
+          git checkout --orphan ci-generated-tmp
+          git rm -rf --cached . >/dev/null 2>&1 || true
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -r /tmp/gen/* . 2>/dev/null || true
+          git add -A && git commit -qm "Generated files for ${GITHUB_SHA}" && git push -f origin HEAD:ci-generated || true
