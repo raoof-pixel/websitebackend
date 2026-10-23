@@ -86,7 +86,7 @@ render `legacyHtml` instead.
 1. Create a Neon project; use the pooled connection string as `DATABASE_URL` (production = `main` branch).
 2. Import this repo in Vercel, add the env vars from `.env.example`, and add a Vercel Blob store
    (sets `BLOB_READ_WRITE_TOKEN`).
-3. Before the first deploy, create the database migration locally against an empty database and commit it:
-   `pnpm migrate:create initial`. The Vercel build (`pnpm run ci`) runs migrations, then builds.
+3. The initial database migration is already in `src/migrations`. The Vercel build (`pnpm run ci`) runs
+   migrations, then builds. After changing collections, run `pnpm migrate:create <name>` and commit it.
 4. Scheduled publishing runs via the Vercel Cron in `vercel.json` (needs `CRON_SECRET`; every-5-minute
    crons need a Vercel Pro plan, otherwise change the schedule).

@@ -44,7 +44,7 @@ const api = async (path, { method = 'GET', body, cookie, apiKey, headers = {}, r
   return { res, status: res.status, json }
 }
 
-const ADMIN = { email: 'admin@example.com', password: 'Str0ng!Admin#Pass2026', name: 'Test Admin' }
+const ADMIN = { email: 'admin@example.com', password: 'Str0ng!Owner#Pass2026', name: 'Test Admin' }
 const AUTHOR_A = { email: 'author.a@example.com', password: 'Auth0r!A#Secure2026', name: 'Author A', roles: ['author'] }
 const AUTHOR_B = { email: 'author.b@example.com', password: 'Auth0r!B#Secure2026', name: 'Author B', roles: ['author'] }
 const BOT = { email: 'bot@example.com', password: 'B0t!Automation#2026x', name: 'Newswire bot', roles: ['automation'] }

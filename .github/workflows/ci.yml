@@ -98,6 +98,7 @@ jobs:
           BASE_URL=http://localhost:3000 node tests/smoke.mjs 2>&1 | tee ci-output/09-smoke.log
 
       - name: Test WordPress import (read-only, newest 15 articles)
+        if: always()
         continue-on-error: true
         run: |
           set -o pipefail
