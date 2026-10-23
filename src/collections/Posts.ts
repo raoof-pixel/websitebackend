@@ -5,7 +5,15 @@ import type {
   CollectionConfig,
 } from 'payload'
 
-import { canCreateContent, canEditOwnOrAll, publishedOrAuthenticated } from '../access'
+import {
+  authenticatedField,
+  canCreateContent,
+  canDeleteOwnOrAll,
+  canUpdateOwnOrAll,
+  isAutomationOnly,
+  publishedOrAuthenticated,
+} from '../access'
+import { auditAfterChange, auditAfterDelete } from './AuditLogs'
 import { legacyHtmlFields } from '../fields/legacyHtml'
 import { articleEditor } from '../fields/richText'
 import { slug } from '../fields/slug'
@@ -19,8 +27,13 @@ const idOf = (v: unknown) => (v && typeof v === 'object' ? (v as { id: unknown }
 const prepare: CollectionBeforeChangeHook = async ({ data, operation, originalDoc, req }) => {
   const user = req.user as { id: number | string; author?: unknown } | null
 
+  // Bots can only save drafts for a person to review, unless explicitly allowed.
+  if (isAutomationOnly(user as never) && process.env.AUTOMATION_CAN_PUBLISH !== 'true') {
+    data._status = 'draft'
+  }
+
   if (operation === 'create') {
-    if (user && !data.createdBy) data.createdBy = user.id
+    if (user) data.createdBy = user.id
     // New articles get the logged-in person's byline by default.
     if ((!data.authors || data.authors.length === 0) && user?.author) {
       data.authors = [idOf(user.author)]
@@ -123,8 +136,8 @@ export const Posts: CollectionConfig = {
   access: {
     read: publishedOrAuthenticated,
     create: canCreateContent,
-    update: canEditOwnOrAll,
-    delete: canEditOwnOrAll,
+    update: canUpdateOwnOrAll,
+    delete: canDeleteOwnOrAll,
     readVersions: ({ req }) => Boolean(req.user),
   },
   fields: [
@@ -207,6 +220,8 @@ export const Posts: CollectionConfig = {
     {
       name: 'sourceUrl',
       type: 'text',
+      validate: (v: unknown) =>
+        !v || (typeof v === 'string' && /^https?:\/\//i.test(v)) ? true : 'Must start with http:// or https://',
       admin: {
         position: 'sidebar',
         description: 'Original press release (e.g. a newswire.ca link), if any.',
@@ -230,13 +245,15 @@ export const Posts: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       admin: { position: 'sidebar', readOnly: true },
+      // Hidden from the public API and can't be changed after creation.
+      access: { read: authenticatedField, update: () => false },
     },
     wpId(),
   ],
   hooks: {
     beforeChange: [prepare],
-    afterChange: [revalidateAfterChange],
-    afterDelete: [revalidateAfterDelete],
+    afterChange: [revalidateAfterChange, auditAfterChange],
+    afterDelete: [revalidateAfterDelete, auditAfterDelete],
   },
   versions: {
     drafts: {

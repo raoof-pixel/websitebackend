@@ -2,6 +2,7 @@ import type { Field, GlobalConfig } from 'payload'
 
 import { anyone, isStaff } from '../access'
 import { notifyFrontend } from '../utilities/revalidate'
+import { sanitizeHtmlHook } from '../utilities/sanitizeHtml'
 
 const link = (name: string, label?: string): Field => ({
   name,
@@ -109,6 +110,7 @@ export const SiteSettings: GlobalConfig = {
             {
               name: 'articleFooterHtml',
               type: 'code',
+              hooks: { beforeChange: [sanitizeHtmlHook] },
               admin: {
                 language: 'html',
                 description:

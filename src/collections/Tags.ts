@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone, canCreateContent, isStaff } from '../access'
 import { slug } from '../fields/slug'
 import { wpId } from '../fields/wordpress'
+import { auditAfterChange, auditAfterDelete } from './AuditLogs'
 
 /** Free-form tags, e.g. "October 2026". URLs: /tag/<slug>/ */
 export const Tags: CollectionConfig = {
@@ -24,4 +25,8 @@ export const Tags: CollectionConfig = {
     { name: 'description', type: 'textarea' },
     wpId(),
   ],
+  hooks: {
+    afterChange: [auditAfterChange],
+    afterDelete: [auditAfterDelete],
+  },
 }

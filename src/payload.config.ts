@@ -10,6 +10,7 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { isStaff } from './access'
+import { AuditLogs } from './collections/AuditLogs'
 import { Authors } from './collections/Authors'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
@@ -20,6 +21,12 @@ import { Users } from './collections/Users'
 import { healthEndpoint, resolveEndpoint } from './endpoints/resolve'
 import { Navigation, SiteSettings } from './globals/SiteSettings'
 import { getServerURL, getSiteURL } from './utilities/revalidate'
+
+// Refuse to start in production with a weak or missing secret (it signs every login).
+const secret = process.env.PAYLOAD_SECRET || ''
+if (process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE !== 'phase-production-build' && secret.length < 32) {
+  throw new Error('PAYLOAD_SECRET must be set to a random string of at least 32 characters.')
+}
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -41,10 +48,10 @@ export default buildConfig({
     importMap: { baseDir: path.resolve(dirname) },
     meta: { titleSuffix: ' - CanadianSME CMS' },
   },
-  collections: [Posts, Pages, Categories, Tags, Authors, Media, Users],
+  collections: [Posts, Pages, Categories, Tags, Authors, Media, Users, AuditLogs],
   globals: [SiteSettings, Navigation],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret,
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URL || '' },
@@ -52,6 +59,19 @@ export default buildConfig({
   sharp,
   cors: allowedOrigins,
   csrf: allowedOrigins,
+  // Limit how deep a single API request can pull related data (stops expensive abuse).
+  maxDepth: 4,
+  defaultDepth: 1,
+  graphQL: {
+    disablePlaygroundInProduction: true,
+    disableIntrospectionInProduction: true,
+    maxComplexity: 1000,
+  },
+  upload: {
+    limits: { fileSize: 15 * 1024 * 1024 }, // 15 MB per file
+    abortOnLimit: true,
+    safeFileNames: true,
+  },
   endpoints: [resolveEndpoint, healthEndpoint],
   plugins: [
     seoPlugin({

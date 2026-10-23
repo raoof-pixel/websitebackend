@@ -6,6 +6,7 @@ import { articleEditor } from '../fields/richText'
 import { slug } from '../fields/slug'
 import { wpId } from '../fields/wordpress'
 import { getSiteURL, notifyFrontend, paths } from '../utilities/revalidate'
+import { auditAfterChange, auditAfterDelete } from './AuditLogs'
 
 const revalidatePage: CollectionAfterChangeHook = async ({ doc, previousDoc, req }) => {
   if (doc._status !== 'published' && previousDoc?._status !== 'published') return doc
@@ -63,7 +64,8 @@ export const Pages: CollectionConfig = {
     wpId(),
   ],
   hooks: {
-    afterChange: [revalidatePage],
+    afterChange: [revalidatePage, auditAfterChange],
+    afterDelete: [auditAfterDelete],
   },
   versions: {
     drafts: { autosave: { interval: 2000 } },

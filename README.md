@@ -19,7 +19,8 @@ Built on [Payload CMS 3](https://payloadcms.com) (Next.js) with a Neon Postgres 
 | **SEO** | Every article/page/category has an SEO tab: meta title, description, share image, canonical URL, noindex. |
 | **Redirects** | Manage 301/302 redirects from the admin. |
 | **Settings** | Site name, logo, social links, SEO defaults, header/footer menus. |
-| **Users & roles** | Admin, Editor (all articles), Author (own articles only), Automation (API key for scripts like the Newswire workflow). |
+| **Users & roles** | Admin, Editor (all articles), Author (own articles only), Automation (API key for scripts like the Newswire workflow; drafts only by default). |
+| **Security** | Login lockout, strong passwords, HTML cleaning, upload restrictions, security headers and a tamper-proof activity log. See [SECURITY.md](SECURITY.md). |
 
 URLs match WordPress exactly (`https://canadiansme.ca/<post-slug>/`), so Google rankings are kept.
 

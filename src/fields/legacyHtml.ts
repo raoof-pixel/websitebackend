@@ -1,5 +1,7 @@
 import type { Field } from 'payload'
 
+import { sanitizeHtmlHook } from '../utilities/sanitizeHtml'
+
 /**
  * Imported WordPress articles keep their original HTML here, untouched.
  *
@@ -26,7 +28,8 @@ export const legacyHtmlFields = (): Field[] => [
       {
         name: 'legacyHtml',
         type: 'code',
-        admin: { language: 'html' },
+        admin: { language: 'html', description: 'Cleaned automatically on save: scripts, event handlers and unknown iframes are removed.' },
+        hooks: { beforeChange: [sanitizeHtmlHook] },
       },
     ],
   },

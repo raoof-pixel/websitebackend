@@ -2,7 +2,8 @@ import path from 'path'
 import type { CollectionConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
-import { anyone, canCreateContent, canEditOwnOrAll } from '../access'
+import { anyone, authenticatedField, canCreateContent, canDeleteOwnOrAll, canUpdateOwnOrAll } from '../access'
+import { auditAfterDelete } from './AuditLogs'
 import { wpId } from '../fields/wordpress'
 
 const filename = fileURLToPath(import.meta.url)
@@ -21,8 +22,8 @@ export const Media: CollectionConfig = {
   access: {
     read: anyone,
     create: canCreateContent,
-    update: canEditOwnOrAll,
-    delete: canEditOwnOrAll,
+    update: canUpdateOwnOrAll,
+    delete: canDeleteOwnOrAll,
   },
   fields: [
     {
@@ -37,10 +38,11 @@ export const Media: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       admin: { position: 'sidebar', readOnly: true },
+      // Hidden from the public API; always the uploader, can't be faked.
+      access: { read: authenticatedField, update: () => false },
       hooks: {
         beforeChange: [
-          ({ operation, req, value }) =>
-            operation === 'create' && req.user && !value ? req.user.id : value,
+          ({ operation, req, value }) => (operation === 'create' && req.user ? req.user.id : value),
         ],
       },
     },
@@ -53,11 +55,15 @@ export const Media: CollectionConfig = {
       admin: { position: 'sidebar', readOnly: true },
     },
   ],
+  hooks: {
+    afterDelete: [auditAfterDelete],
+  },
   upload: {
     staticDir: path.resolve(dirname, '../../public/media'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,
-    mimeTypes: ['image/*', 'application/pdf', 'video/mp4'],
+    // No SVG: SVG files can contain scripts. Only these formats are accepted.
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'application/pdf'],
     imageSizes: [
       { name: 'thumbnail', width: 300, height: 200, position: 'centre' },
       { name: 'card', width: 640 },

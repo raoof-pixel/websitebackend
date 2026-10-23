@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone, canCreateContent, isStaff } from '../access'
 import { slug } from '../fields/slug'
 import { wpId } from '../fields/wordpress'
+import { auditAfterChange, auditAfterDelete } from './AuditLogs'
 import { notifyFrontend, paths } from '../utilities/revalidate'
 
 /**
@@ -31,12 +32,13 @@ export const Authors: CollectionConfig = {
     {
       name: 'links',
       type: 'group',
-      fields: [
-        { name: 'website', type: 'text' },
-        { name: 'linkedin', type: 'text' },
-        { name: 'x', type: 'text', label: 'X (Twitter)' },
-        { name: 'instagram', type: 'text' },
-      ],
+      fields: ['website', 'linkedin', 'x', 'instagram'].map((name) => ({
+        name,
+        type: 'text' as const,
+        label: name === 'x' ? 'X (Twitter)' : undefined,
+        validate: (v: unknown) =>
+          !v || (typeof v === 'string' && /^https?:\/\//i.test(v)) ? true : 'Must start with https://',
+      })),
     },
     wpId(),
   ],
@@ -53,6 +55,8 @@ export const Authors: CollectionConfig = {
         })
         return doc
       },
+      auditAfterChange,
     ],
+    afterDelete: [auditAfterDelete],
   },
 }

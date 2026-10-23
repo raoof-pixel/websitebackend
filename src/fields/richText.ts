@@ -8,6 +8,8 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 
+import { sanitizeHtmlHook } from '../utilities/sanitizeHtml'
+
 /** Embed a YouTube/Vimeo video, a podcast, a social post, etc. by URL. */
 export const EmbedBlock: Block = {
   slug: 'embed',
@@ -19,6 +21,8 @@ export const EmbedBlock: Block = {
       type: 'text',
       required: true,
       admin: { description: 'e.g. https://www.youtube.com/watch?v=...' },
+      validate: (v: unknown) =>
+        typeof v === 'string' && /^https:\/\/[^\s]+$/i.test(v) ? true : 'Must be an https:// link',
     },
     { name: 'caption', type: 'text' },
   ],
@@ -34,7 +38,11 @@ export const HtmlBlock: Block = {
       name: 'html',
       type: 'code',
       required: true,
-      admin: { language: 'html' },
+      admin: {
+        language: 'html',
+        description: 'Scripts and iframes from unknown sites are removed automatically when saved.',
+      },
+      hooks: { beforeChange: [sanitizeHtmlHook] },
     },
   ],
 }
@@ -57,7 +65,12 @@ export const CalloutBlock: Block = {
     },
     { name: 'text', type: 'textarea', required: true },
     { name: 'linkLabel', type: 'text' },
-    { name: 'linkUrl', type: 'text' },
+    {
+      name: 'linkUrl',
+      type: 'text',
+      validate: (v: unknown) =>
+        !v || (typeof v === 'string' && /^(https:\/\/|\/|mailto:)/i.test(v)) ? true : 'Use https://, a /path or mailto:',
+    },
   ],
 }
 

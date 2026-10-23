@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone, isStaff } from '../access'
 import { slug } from '../fields/slug'
 import { wpId } from '../fields/wordpress'
+import { auditAfterChange, auditAfterDelete } from './AuditLogs'
 import { notifyFrontend, paths } from '../utilities/revalidate'
 
 /** Article sections, e.g. Latest News, Leadership, Interviews. URLs: /category/<slug>/ */
@@ -55,6 +56,8 @@ export const Categories: CollectionConfig = {
         })
         return doc
       },
+      auditAfterChange,
     ],
+    afterDelete: [auditAfterDelete],
   },
 }

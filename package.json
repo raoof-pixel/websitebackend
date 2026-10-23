@@ -17,7 +17,8 @@
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "import:wp": "cross-env NODE_OPTIONS=--no-deprecation payload run src/scripts/import-wordpress.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "audit": "pnpm audit --prod"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.92.0",
@@ -28,6 +29,7 @@
     "@payloadcms/storage-vercel-blob": "3.92.0",
     "@payloadcms/ui": "3.92.0",
     "cross-env": "^7.0.3",
+    "dompurify": "3.2.6",
     "graphql": "^16.8.1",
     "jsdom": "28.0.0",
     "next": "16.3.3",
