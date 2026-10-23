@@ -11,6 +11,8 @@
  *   pnpm import:wp --only=posts --since=2026-10-01
  *   pnpm import:wp --only=pages
  *   pnpm import:wp --skip-media            # don't download images (faster test)
+ *   pnpm import:wp --concurrency=8         # articles processed in parallel (default 6)
+ *   pnpm import:wp --skip-existing         # resume: skip articles already imported
  *
  * Options can also be given as environment variables: IMPORT_LIMIT, IMPORT_ONLY, IMPORT_SINCE,
  * IMPORT_SKIP_MEDIA=true.
@@ -457,6 +459,54 @@ const seoFrom = (wp: any, title: string, featuredImage: any, publicUrl: string) 
 
 const STATUS_PARAM = AUTH ? 'publish,draft,pending,private,future' : 'publish'
 
+const CONCURRENCY = Math.max(1, Math.min(12, Number(arg('concurrency') || 6)))
+const SKIP_EXISTING = arg('skip-existing') === 'true'
+
+/** Runs `fn` over `items` with at most `limit` running at the same time. */
+const pool = async <T>(items: T[], limit: number, fn: (item: T) => Promise<void>) => {
+  let i = 0
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (i < items.length) {
+      const item = items[i++]
+      await fn(item)
+    }
+  })
+  await Promise.all(workers)
+}
+
+async function importOnePost(payload: Payload, p: any) {
+  try {
+    const title = decode(p.title?.rendered) || '(untitled)'
+    const html: string = p.content?.rendered || ''
+    const featured = await importMedia(payload, p.featured_media)
+    const authorId = p.author ? await ensureAuthor(payload, p.author, p._embedded?.author?.[0]) : null
+    const content = toLexical(payload, html, 'posts')
+    const published = p.status === 'publish'
+    await upsertWithFallback(payload, 'posts', p.id, {
+      title,
+      slug: p.slug || undefined,
+      generateSlug: false,
+      excerpt: decode(p.excerpt?.rendered).replace(/\s*(\.\.\.|\[\.\.\.\])$/, '...') || null,
+      featuredImage: featured,
+      content,
+      legacyHtml: html,
+      useLegacyHtml: !content || NEEDS_LEGACY.test(html),
+      authors: authorId ? [authorId] : [],
+      categories: (p.categories || []).map((id: number) => categoryMap.get(id)).filter(Boolean),
+      primaryCategory: categoryMap.get((p.categories || [])[0]) || null,
+      tags: (p.tags || []).map((id: number) => tagMap.get(id)).filter(Boolean),
+      isFeatured: Boolean(p.sticky),
+      publishedAt: p.date_gmt ? `${p.date_gmt}Z` : null,
+      meta: seoFrom(p, title, featured, p.link || `${WP}/${p.slug}/`),
+      _status: published ? 'published' : 'draft',
+    })
+    bump('posts')
+  } catch (err) {
+    bump('postErrors')
+    console.error(`  post ${p.id} (${p.slug}) failed: ${(err as Error).message}`)
+  }
+}
+
 async function importPosts(payload: Payload) {
   const params: Record<string, string | number> = {
     orderby: 'date',
@@ -466,48 +516,42 @@ async function importPosts(payload: Payload) {
     _embed: 'author',
   }
   if (SINCE) params.modified_after = new Date(SINCE).toISOString()
-  let n = 0
-  for await (const p of wpPaged('/wp/v2/posts', params, 50)) {
-    if (n >= LIMIT) break
-    n++
-    try {
-      const title = decode(p.title?.rendered) || '(untitled)'
-      const html: string = p.content?.rendered || ''
-      const featured = await importMedia(payload, p.featured_media)
-      const authorId = p.author ? await ensureAuthor(payload, p.author, p._embedded?.author?.[0]) : null
-      const content = toLexical(payload, html, 'posts')
-      const published = p.status === 'publish'
-      await upsertWithFallback(
-        payload,
-        'posts',
-        p.id,
-        {
-          title,
-          slug: p.slug || undefined,
-          generateSlug: false,
-          excerpt: decode(p.excerpt?.rendered).replace(/\s*(\.\.\.|\[\.\.\.\])$/, '...') || null,
-          featuredImage: featured,
-          content,
-          legacyHtml: html,
-          useLegacyHtml: !content || NEEDS_LEGACY.test(html),
-          authors: authorId ? [authorId] : [],
-          categories: (p.categories || []).map((id: number) => categoryMap.get(id)).filter(Boolean),
-          primaryCategory: categoryMap.get((p.categories || [])[0]) || null,
-          tags: (p.tags || []).map((id: number) => tagMap.get(id)).filter(Boolean),
-          isFeatured: Boolean(p.sticky),
-          publishedAt: p.date_gmt ? `${p.date_gmt}Z` : null,
-          meta: seoFrom(p, title, featured, p.link || `${WP}/${p.slug}/`),
-          _status: published ? 'published' : 'draft',
-        },
-      )
-      bump('posts')
-      if (n % 25 === 0) console.log(`  posts: ${n}...`)
-    } catch (err) {
-      bump('postErrors')
-      console.error(`  post ${p.id} (${p.slug}) failed: ${(err as Error).message}`)
-    }
+
+  // With --skip-existing, articles already imported are skipped, so an interrupted run resumes quickly.
+  const existing = new Set<number>()
+  if (SKIP_EXISTING) {
+    const res = await payload.find({
+      collection: 'posts',
+      limit: 0,
+      pagination: false,
+      depth: 0,
+      draft: true,
+      overrideAccess: true,
+      select: { wpId: true } as any,
+    })
+    for (const d of res.docs as any[]) if (d.wpId) existing.add(d.wpId)
+    console.log(`  ${existing.size} articles already imported will be skipped`)
   }
-  console.log(`  posts: ${n}`)
+
+  const started = Date.now()
+  let seen = 0
+  let batch: any[] = []
+  const flush = async () => {
+    const todo = batch.filter((p) => !existing.has(p.id))
+    if (batch.length > todo.length) counts.skipped = (counts.skipped || 0) + batch.length - todo.length
+    batch = []
+    await pool(todo, CONCURRENCY, (p) => importOnePost(payload, p))
+    const mins = (Date.now() - started) / 60000
+    console.log(`  posts: ${seen} read, ${counts.posts || 0} saved, ${counts.postErrors || 0} errors (${mins.toFixed(1)} min)`)
+  }
+  for await (const p of wpPaged('/wp/v2/posts', params, 50)) {
+    if (seen >= LIMIT) break
+    seen++
+    batch.push(p)
+    if (batch.length >= 50) await flush()
+  }
+  if (batch.length) await flush()
+  console.log(`  posts: ${seen}`)
 }
 
 async function importPages(payload: Payload) {

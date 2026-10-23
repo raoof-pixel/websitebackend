@@ -1,0 +1,71 @@
+name: Import from WordPress
+
+# Copies all articles, pages, categories, tags, authors and images from canadiansme.ca into the
+# live CMS database. READ-ONLY on WordPress. Safe to re-run (updates, never duplicates).
+#
+# Start it by pushing any commit to the `run-import` branch, or from the Actions tab.
+# Needs two repository secrets (Settings > Secrets and variables > Actions):
+#   DATABASE_URL           - the Neon connection string (same as in Vercel)
+#   BLOB_READ_WRITE_TOKEN  - from Vercel > Storage > canadiansme-cms-blob (so images go to Blob)
+
+on:
+  workflow_dispatch:
+    inputs:
+      args:
+        description: 'Importer options, e.g. --skip-existing or --only=posts --since=2026-10-01'
+        required: false
+        default: '--skip-existing'
+  push:
+    branches: [run-import]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wp-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+      PAYLOAD_SECRET: import-job-only-not-used-for-logins-000000
+      NEXT_PUBLIC_SITE_URL: https://canadiansme.ca
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check secrets
+        run: |
+          if [ -z "$DATABASE_URL" ]; then echo "::error::Add the DATABASE_URL repository secret first"; exit 1; fi
+          if [ -z "$BLOB_READ_WRITE_TOKEN" ]; then echo "::error::Add the BLOB_READ_WRITE_TOKEN repository secret first"; exit 1; fi
+      - run: pnpm install --frozen-lockfile
+      - name: Apply database migrations
+        run: pnpm migrate
+      - name: Import (read-only from WordPress)
+        run: |
+          mkdir -p out
+          pnpm import:wp --concurrency=8 ${{ github.event.inputs.args || '--skip-existing' }} 2>&1 | tee out/import.log
+      - name: Publish log
+        if: always()
+        run: |
+          mkdir -p out && touch out/import.log
+          echo "finished: $(date -u) status: ${{ job.status }}" > out/summary.txt
+          tail -40 out/import.log >> out/summary.txt
+          echo '{"git":{"deploymentEnabled":false}}' > out/vercel.json
+          cp -r out /tmp/out
+          git config user.name ci-bot && git config user.email ci-bot@users.noreply.github.com
+          git checkout --orphan import-results-tmp
+          git rm -rf --cached . >/dev/null
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -r /tmp/out/* .
+          git add -A && git commit -qm "Import log $(date -u +%FT%TZ)" && git push -f origin HEAD:import-results

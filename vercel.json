@@ -9,7 +9,9 @@
   "git": {
     "deploymentEnabled": {
       "ci-results": false,
-      "ci-generated": false
+      "ci-generated": false,
+      "run-import": false,
+      "import-results": false
     }
   }
 }
