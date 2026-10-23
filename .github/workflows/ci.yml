@@ -102,7 +102,7 @@ jobs:
         continue-on-error: true
         run: |
           pnpm import:wp --limit=15 2>&1 | tee ci-output/10-import.log || true
-          curl -s "http://localhost:3000/api/posts?limit=15&depth=0&select[title]=true&select[slug]=true&select[useLegacyHtml]=true&select[_status]=true&select[authors]=true&select[featuredImage]=true" > ci-output/11-imported-posts.json || true
+          psql "$DATABASE_URL" -c "select p.slug, p._status, p.use_legacy_html, (p.featured_image_id is not null) as has_image, (select count(*) from posts_rels r where r.parent_id = p.id and r.path = 'authors') as authors, (select count(*) from posts_rels r where r.parent_id = p.id and r.path = 'categories') as cats, length(p.legacy_html) as html_len from posts p order by p.published_at desc nulls last limit 20" > ci-output/11-imported-posts.txt 2>&1 || true
 
       - name: Publish results
         if: always()
