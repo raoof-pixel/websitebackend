@@ -34,7 +34,7 @@ pnpm install
 pnpm dev                  # open http://localhost:3000/admin and create the first user (becomes Admin)
 ```
 
-In development the database tables are created automatically.
+Create the database tables with `pnpm migrate` (also after pulling changes that add migrations).
 
 ## Import from WordPress (read-only)
 

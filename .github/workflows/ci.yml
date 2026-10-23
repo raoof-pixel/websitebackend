@@ -54,12 +54,11 @@ jobs:
       - name: Install
         run: |
           set -o pipefail
-          if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile 2>&1 | tee ci-output/01-install.log
-          else pnpm install --no-frozen-lockfile 2>&1 | tee ci-output/01-install.log; fi
+          pnpm install --no-frozen-lockfile 2>&1 | tee ci-output/01-install.log
 
       - name: Dependency vulnerability audit
         continue-on-error: true
-        run: pnpm audit --prod 2>&1 | tee ci-output/02-audit.log
+        run: pnpm audit --prod --audit-level high 2>&1 | tee ci-output/02-audit.log
 
       - name: Generate types and import map
         run: |

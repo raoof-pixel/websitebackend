@@ -55,6 +55,9 @@ export default buildConfig({
   typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URL || '' },
+    // Schema changes only ever happen through reviewed migration files (pnpm migrate),
+    // never by auto-pushing, so a dev machine can't silently alter the live database.
+    push: false,
   }),
   sharp,
   cors: allowedOrigins,
