@@ -124,10 +124,12 @@ jobs:
           git rm -rf --cached . >/dev/null
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -r /tmp/ci-output/* .
+          echo '{"git":{"deploymentEnabled":false}}' > vercel.json
           git add -A && git commit -qm "CI results for ${GITHUB_SHA}"
           git push -f origin HEAD:ci-results
           git checkout --orphan ci-generated-tmp
           git rm -rf --cached . >/dev/null 2>&1 || true
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -r /tmp/gen/* . 2>/dev/null || true
+          echo '{"git":{"deploymentEnabled":false}}' > vercel.json
           git add -A && git commit -qm "Generated files for ${GITHUB_SHA}" && git push -f origin HEAD:ci-generated || true
