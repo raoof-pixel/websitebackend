@@ -1,0 +1,364 @@
+/* ==========================================================================
+   CanadianSME admin theme
+   Brand: lime accent #daf400 on black/white, Sora headings, IBM Plex Sans body.
+   Overrides Payload's default (layered) styles, so it survives Payload upgrades.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@500;600;700;800&display=swap');
+
+:root {
+  --csme-lime: #daf400;
+  --csme-lime-strong: #c6de00;
+  --csme-lime-soft: #f6fcc8;
+  --csme-ink: #0b0b0c;
+  --csme-ink-2: #17181b;
+  --csme-violet: #7c5cff;
+  --csme-sky: #1fb3f0;
+  --csme-coral: #ff6b57;
+  --csme-paper: #f7f7f2;
+
+  --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --style-radius-s: 8px;
+  --style-radius-m: 12px;
+  --style-radius-l: 18px;
+  --accessibility-outline: 2px solid var(--csme-lime-strong);
+}
+
+html[data-theme='light'] {
+  --theme-bg: var(--csme-paper);
+  --theme-input-bg: #ffffff;
+}
+
+h1, h2, h3, h4, h5, h6,
+.doc-header__title,
+.list-header h1,
+.collection-list__title {
+  font-family: 'Sora', var(--font-body);
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: var(--csme-lime);
+  color: var(--csme-ink);
+}
+
+/* ---------- Buttons ---------- */
+.btn--style-primary {
+  --bg-color: var(--csme-lime);
+  --color: var(--csme-ink);
+  --hover-bg: var(--csme-lime-strong);
+  --hover-color: var(--csme-ink);
+  font-weight: 600;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), 0 6px 16px -8px rgba(198, 222, 0, 0.9);
+}
+.btn--style-primary.btn--disabled {
+  --bg-color: var(--theme-elevation-150);
+  --color: var(--theme-elevation-500);
+  box-shadow: none;
+}
+.btn--style-secondary {
+  --hover-bg: var(--csme-lime-soft);
+}
+html[data-theme='dark'] .btn--style-secondary {
+  --hover-bg: rgba(218, 244, 0, 0.12);
+}
+
+/* ---------- Inputs ---------- */
+.field-type input:focus,
+.field-type textarea:focus,
+.react-select .rs__control--is-focused {
+  border-color: var(--csme-lime-strong) !important;
+  box-shadow: 0 0 0 3px rgba(218, 244, 0, 0.35) !important;
+}
+
+/* ---------- Navigation (always dark, like the magazine footer) ---------- */
+.nav {
+  background: var(--csme-ink);
+  border-right-color: #000 !important;
+  color: #e9e9ea;
+}
+.nav a,
+.nav button,
+.nav .nav__label,
+.nav .nav-group__label,
+.nav .nav-group__toggle {
+  color: #cfd0d4;
+}
+.nav .nav-group__toggle,
+.nav .nav-group__label {
+  font-family: 'Sora', var(--font-body);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8a8c93;
+}
+.nav a.nav__link {
+  border-radius: 8px;
+  padding-inline-start: 10px;
+  margin-inline-start: -10px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.nav a.nav__link:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  text-decoration: none;
+}
+.nav .nav__link.active,
+.nav .nav__link:has(.nav__link-indicator) {
+  background: rgba(218, 244, 0, 0.12);
+  color: var(--csme-lime);
+  padding-inline-start: 10px;
+  margin-inline-start: -10px;
+  border-radius: 8px;
+}
+.nav .nav__link-indicator {
+  background: var(--csme-lime);
+  width: 3px;
+}
+.nav svg {
+  color: #cfd0d4;
+}
+
+/* ---------- Icon & logo ---------- */
+.csme-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--csme-lime);
+  color: var(--csme-ink);
+  font-family: 'Sora', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+}
+
+.csme-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.csme-logo__mark {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Sora', sans-serif;
+  font-weight: 800;
+  font-size: 34px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.csme-logo__canadian {
+  color: #fff;
+}
+.csme-logo__sme {
+  background: var(--csme-lime);
+  color: var(--csme-ink);
+  padding: 6px 12px 7px;
+  border-radius: 999px;
+}
+.csme-logo__tag {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #9a9ca3;
+}
+
+/* ---------- Login & other minimal pages ---------- */
+.template-minimal {
+  background:
+    radial-gradient(900px 500px at 12% -10%, rgba(218, 244, 0, 0.22), transparent 60%),
+    radial-gradient(700px 500px at 110% 110%, rgba(124, 92, 255, 0.28), transparent 60%),
+    radial-gradient(500px 400px at 90% 0%, rgba(31, 179, 240, 0.16), transparent 60%),
+    var(--csme-ink) !important;
+  color: #f1f1f2;
+}
+.template-minimal__wrap {
+  background: rgba(23, 24, 27, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 36px 32px 28px;
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+}
+.template-minimal .field-label,
+.template-minimal label,
+.template-minimal h1,
+.template-minimal p {
+  color: #e9e9ea;
+}
+.template-minimal input {
+  background: #0f1012 !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+.template-minimal a {
+  color: var(--csme-lime);
+}
+.csme-before-login {
+  text-align: center;
+  margin-bottom: 18px;
+}
+.csme-before-login__title {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  margin: 0 0 4px;
+}
+.csme-before-login__text {
+  font-size: 13px;
+  color: #9a9ca3 !important;
+  margin: 0;
+}
+
+/* ---------- Dashboard welcome ---------- */
+.csme-dash {
+  margin: 8px 0 28px;
+}
+.csme-dash__hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 30px 30px 28px;
+  border-radius: 22px;
+  background:
+    radial-gradient(600px 300px at 0% 0%, rgba(218, 244, 0, 0.35), transparent 60%),
+    radial-gradient(500px 300px at 100% 100%, rgba(124, 92, 255, 0.45), transparent 60%),
+    var(--csme-ink);
+  color: #fff;
+}
+.csme-dash__eyebrow {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--csme-lime);
+  font-weight: 600;
+}
+.csme-dash__title {
+  margin: 0;
+  font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 1.05;
+  color: #fff;
+}
+.csme-dash__title span {
+  color: var(--csme-lime);
+}
+.csme-dash__sub {
+  margin: 10px 0 0;
+  color: #c9cad0;
+  max-width: 52ch;
+}
+.csme-dash__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.csme-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none !important;
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+.csme-btn:hover {
+  transform: translateY(-1px);
+}
+.csme-btn--lime {
+  background: var(--csme-lime);
+  color: var(--csme-ink) !important;
+}
+.csme-btn--ghost {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.csme-dash__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.csme-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: var(--theme-elevation-0);
+  border: 1px solid var(--theme-elevation-100);
+  text-decoration: none !important;
+  color: var(--theme-text) !important;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.12s ease, box-shadow 0.15s ease;
+}
+.csme-stat::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--tone);
+}
+.csme-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -18px var(--tone);
+}
+.csme-stat__value {
+  font-family: 'Sora', sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.csme-stat__label {
+  font-size: 13px;
+  color: var(--theme-elevation-500);
+}
+.csme-stat--lime { --tone: var(--csme-lime-strong); }
+.csme-stat--violet { --tone: var(--csme-violet); }
+.csme-stat--sky { --tone: var(--csme-sky); }
+.csme-stat--coral { --tone: var(--csme-coral); }
+
+/* ---------- Dashboard collection cards ---------- */
+.dashboard .card,
+.collections__card,
+.card {
+  border-radius: 14px;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.dashboard .card:hover,
+.card:hover {
+  transform: translateY(-1px);
+  border-color: var(--csme-lime-strong);
+  box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Status pills ---------- */
+.pill--style-success,
+.pill--style-light-success {
+  background: var(--csme-lime-soft);
+  color: #3d4700;
+}
+html[data-theme='dark'] .pill--style-success,
+html[data-theme='dark'] .pill--style-light-success {
+  background: rgba(218, 244, 0, 0.16);
+  color: var(--csme-lime);
+}
+
+/* ---------- Tables ---------- */
+.table table tbody tr:hover td {
+  background: rgba(218, 244, 0, 0.07);
+}
+.table a {
+  font-weight: 500;
+}

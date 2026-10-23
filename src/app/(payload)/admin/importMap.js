@@ -1,3 +1,7 @@
+import { Logo as Logo_csme } from '../../../components/Logo'
+import { Icon as Icon_csme } from '../../../components/Icon'
+import { BeforeLogin as BeforeLogin_csme } from '../../../components/BeforeLogin'
+import { Dashboard as Dashboard_csme } from '../../../components/Dashboard'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -34,6 +38,10 @@ import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "/components/Logo#Logo": Logo_csme,
+  "/components/Icon#Icon": Icon_csme,
+  "/components/BeforeLogin#BeforeLogin": BeforeLogin_csme,
+  "/components/Dashboard#Dashboard": Dashboard_csme,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,

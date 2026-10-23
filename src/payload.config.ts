@@ -49,6 +49,15 @@ export default buildConfig({
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },
     meta: { titleSuffix: ' - CanadianSME CMS' },
+    theme: 'all',
+    components: {
+      graphics: {
+        Logo: '/components/Logo#Logo',
+        Icon: '/components/Icon#Icon',
+      },
+      beforeLogin: ['/components/BeforeLogin#BeforeLogin'],
+      beforeDashboard: ['/components/Dashboard#Dashboard'],
+    },
   },
   collections: [Posts, Pages, Categories, Tags, Authors, Media, Users, AuditLogs],
   globals: [SiteSettings, Navigation],
