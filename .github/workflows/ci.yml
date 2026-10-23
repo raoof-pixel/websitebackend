@@ -101,9 +101,8 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          set -o pipefail
-          pnpm import:wp --limit=15 2>&1 | tee ci-output/10-import.log
-          curl -s "http://localhost:3000/api/posts?limit=15&depth=0&select[title]=true&select[slug]=true&select[useLegacyHtml]=true&select[_status]=true" > ci-output/11-imported-posts.json || true
+          pnpm import:wp --limit=15 2>&1 | tee ci-output/10-import.log || true
+          curl -s "http://localhost:3000/api/posts?limit=15&depth=0&select[title]=true&select[slug]=true&select[useLegacyHtml]=true&select[_status]=true&select[authors]=true&select[featuredImage]=true" > ci-output/11-imported-posts.json || true
 
       - name: Publish results
         if: always()

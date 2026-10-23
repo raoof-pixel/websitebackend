@@ -122,6 +122,19 @@ const upsert = async (payload: Payload, collection: any, wpIdValue: number, data
   return payload.create(opts as any)
 }
 
+/** Saves; if only the converted body is rejected, saves again with the original HTML only. */
+const upsertWithFallback = async (payload: Payload, collection: any, wpIdValue: number, data: any) => {
+  try {
+    return await upsert(payload, collection, wpIdValue, data, true)
+  } catch (err: any) {
+    const fields: string[] = (err?.data?.errors || []).map((e: any) => String(e.path || ''))
+    const contentOnly = fields.length > 0 && fields.every((f) => f === 'content' || f.startsWith('content.'))
+    if (!contentOnly && !/Content/.test(err?.message || '')) throw err
+    bump('htmlFallbacks')
+    return upsert(payload, collection, wpIdValue, { ...data, content: null, useLegacyHtml: true }, true)
+  }
+}
+
 const counts: Record<string, number> = {}
 const bump = (k: string) => (counts[k] = (counts[k] || 0) + 1)
 
@@ -220,8 +233,12 @@ async function importAuthors(payload: Payload) {
   console.log(`  authors: ${n}`)
 }
 
-const ensureAuthor = async (payload: Payload, wpUserId: number) => {
+const ensureAuthor = async (payload: Payload, wpUserId: number, embedded?: any) => {
   if (authorMap.has(wpUserId)) return authorMap.get(wpUserId)!
+  // The public post data includes the author's name and slug, even when the user list is private.
+  if (embedded && embedded.id === wpUserId && embedded.slug) {
+    return await importAuthor(payload, embedded)
+  }
   const existing = await findByWpId(payload, 'authors', wpUserId)
   if (existing) {
     authorMap.set(wpUserId, existing.id)
@@ -308,9 +325,85 @@ const getEditorConfig = (payload: Payload, collection: 'posts' | 'pages') => {
 /** Things the rich-text conversion can't represent 1:1 -> keep showing the original HTML. */
 const NEEDS_LEGACY = /<(img|iframe|figure|table|video|audio|embed|object|script|form|svg)\b|class="[^"]*(twitter-tweet|instagram-media|wp-block-embed|elementor)/i
 
+/** Node types the article editor can store. Anything else is unwrapped or dropped. */
+const KEEP = new Set([
+  'root', 'paragraph', 'text', 'heading', 'list', 'listitem', 'quote', 'link', 'autolink',
+  'linebreak', 'horizontalrule', 'tab',
+])
+
+const fixUrl = (raw: unknown): string | null => {
+  if (typeof raw !== 'string') return null
+  const url = raw.trim()
+  if (!url || url.startsWith('#')) return null
+  if (/^(mailto|tel):/i.test(url)) return url
+  try {
+    const u = new URL(url, `${WP}/`)
+    return u.protocol === 'https:' || u.protocol === 'http:' ? u.toString() : null
+  } catch {
+    return null
+  }
+}
+
+/** Removes nodes the editor would reject (inline images, broken links, unknown blocks). */
+const cleanNodes = (nodes: any[]): any[] => {
+  const out: any[] = []
+  for (const node of nodes || []) {
+    if (!node || typeof node !== 'object') continue
+    if (node.type === 'link' || node.type === 'autolink') {
+      const url = fixUrl(node.fields?.url ?? node.url)
+      const children = cleanNodes(node.children)
+      if (!url) {
+        out.push(...children) // keep the text, drop the broken link
+        continue
+      }
+      out.push({ ...node, fields: { ...(node.fields || {}), url, linkType: 'custom' }, children })
+      continue
+    }
+    if (node.type === 'heading' && !['h2', 'h3', 'h4', 'h5', 'h6'].includes(node.tag)) {
+      node.tag = 'h2'
+    }
+    if (!KEEP.has(node.type)) {
+      // Unknown or unsupported node: keep its text content if it has children.
+      if (Array.isArray(node.children)) out.push(...cleanNodes(node.children))
+      continue
+    }
+    if (Array.isArray(node.children)) node.children = cleanNodes(node.children)
+    out.push(node)
+  }
+  return out
+}
+
+const BLOCK_TYPES = new Set(['paragraph', 'heading', 'list', 'quote', 'horizontalrule'])
+
+const cleanLexical = (state: any) => {
+  if (!state?.root) return null
+  let children = cleanNodes(state.root.children)
+  // The root may only contain block nodes; wrap stray inline nodes in paragraphs.
+  const fixed: any[] = []
+  let buffer: any[] = []
+  const flush = () => {
+    if (buffer.length) {
+      fixed.push({ type: 'paragraph', version: 1, direction: null, format: '', indent: 0, textFormat: 0, children: buffer })
+      buffer = []
+    }
+  }
+  for (const n of children) {
+    if (BLOCK_TYPES.has(n.type)) {
+      flush()
+      fixed.push(n)
+    } else buffer.push(n)
+  }
+  flush()
+  children = fixed
+  if (!children.length) return null
+  return { ...state, root: { ...state.root, children } }
+}
+
 const toLexical = (payload: Payload, html: string, collection: 'posts' | 'pages') => {
   try {
-    return convertHTMLToLexical({ editorConfig: getEditorConfig(payload, collection), html, JSDOM: JSDOM as any })
+    return cleanLexical(
+      convertHTMLToLexical({ editorConfig: getEditorConfig(payload, collection), html, JSDOM: JSDOM as any }),
+    )
   } catch (err) {
     console.warn(`    HTML conversion failed, keeping original HTML only: ${(err as Error).message}`)
     return null
@@ -336,7 +429,13 @@ const seoFrom = (wp: any, title: string, featuredImage: any, publicUrl: string) 
 const STATUS_PARAM = AUTH ? 'publish,draft,pending,private,future' : 'publish'
 
 async function importPosts(payload: Payload) {
-  const params: Record<string, string | number> = { orderby: 'date', order: 'desc', status: STATUS_PARAM, context: 'view' }
+  const params: Record<string, string | number> = {
+    orderby: 'date',
+    order: 'desc',
+    status: STATUS_PARAM,
+    context: 'view',
+    _embed: 'author',
+  }
   if (SINCE) params.modified_after = new Date(SINCE).toISOString()
   let n = 0
   for await (const p of wpPaged('/wp/v2/posts', params, 50)) {
@@ -346,10 +445,10 @@ async function importPosts(payload: Payload) {
       const title = decode(p.title?.rendered) || '(untitled)'
       const html: string = p.content?.rendered || ''
       const featured = await importMedia(payload, p.featured_media)
-      const authorId = p.author ? await ensureAuthor(payload, p.author) : null
+      const authorId = p.author ? await ensureAuthor(payload, p.author, p._embedded?.author?.[0]) : null
       const content = toLexical(payload, html, 'posts')
       const published = p.status === 'publish'
-      await upsert(
+      await upsertWithFallback(
         payload,
         'posts',
         p.id,
@@ -371,7 +470,6 @@ async function importPosts(payload: Payload) {
           meta: seoFrom(p, title, featured, p.link || `${WP}/${p.slug}/`),
           _status: published ? 'published' : 'draft',
         },
-        true,
       )
       bump('posts')
       if (n % 25 === 0) console.log(`  posts: ${n}...`)
@@ -391,7 +489,7 @@ async function importPages(payload: Payload) {
       const html: string = p.content?.rendered || ''
       const featured = await importMedia(payload, p.featured_media)
       const content = toLexical(payload, html, 'pages')
-      await upsert(
+      await upsertWithFallback(
         payload,
         'pages',
         p.id,
@@ -407,7 +505,6 @@ async function importPages(payload: Payload) {
           meta: seoFrom(p, title, featured, p.link || `${WP}/${p.slug}/`),
           _status: p.status === 'publish' ? 'published' : 'draft',
         },
-        true,
       )
       n++
       bump('pages')
