@@ -16,6 +16,8 @@
  * IMPORT_SKIP_MEDIA=true.
  */
 import { convertHTMLToLexical, editorConfigFactory } from '@payloadcms/richtext-lexical'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { JSDOM } from 'jsdom'
 import { getPayload } from 'payload'
 import type { Payload } from 'payload'
@@ -216,8 +218,33 @@ async function importAuthor(payload: Payload, u: any) {
   return doc.id
 }
 
+/**
+ * Public byline list (WordPress ID, name, slug, website; no emails), exported once because
+ * the site's user list isn't public. Used when the WordPress API won't list users.
+ */
+const knownAuthors = (): any[] => {
+  try {
+    return JSON.parse(readFileSync(path.resolve(process.cwd(), 'data/wp-authors.json'), 'utf8'))
+  } catch {
+    return []
+  }
+}
+
 async function importAuthors(payload: Payload) {
   let n = 0
+  const listed = knownAuthors()
+  if (listed.length) {
+    for (const u of listed) {
+      try {
+        await importAuthor(payload, { ...u, description: '' })
+        n++
+      } catch (err) {
+        console.error(`  author ${u.id} (${u.slug}) failed: ${(err as Error).message}`)
+      }
+    }
+    console.log(`  authors: ${n} (from data/wp-authors.json)`)
+    return
+  }
   try {
     for await (const u of wpPaged('/wp/v2/users')) {
       try {
@@ -239,6 +266,8 @@ const ensureAuthor = async (payload: Payload, wpUserId: number, embedded?: any) 
   if (embedded && embedded.id === wpUserId && embedded.slug) {
     return await importAuthor(payload, embedded)
   }
+  const known = knownAuthors().find((u) => u.id === wpUserId)
+  if (known) return await importAuthor(payload, { ...known, description: '' })
   const existing = await findByWpId(payload, 'authors', wpUserId)
   if (existing) {
     authorMap.set(wpUserId, existing.id)
