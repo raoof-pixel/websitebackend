@@ -109,10 +109,10 @@ const counts: Record<string, number> = {}
 const bump = (k: string) => (counts[k] = (counts[k] || 0) + 1)
 
 // ---------- taxonomies ----------
-const categoryMap = new Map<number, number | string>()
-const tagMap = new Map<number, number | string>()
-const authorMap = new Map<number, number | string>()
-const mediaMap = new Map<number, number | string | null>()
+const categoryMap = new Map<number, any>()
+const tagMap = new Map<number, any>()
+const authorMap = new Map<number, any>()
+const mediaMap = new Map<number, any>()
 
 async function importCategories(payload: Payload) {
   const all: any[] = []

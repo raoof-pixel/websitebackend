@@ -97,7 +97,7 @@ export const Users: CollectionConfig = {
       // Enforce the password policy on sign-up, password change and password reset.
       ({ args, operation }) => {
         if (['create', 'update', 'resetPassword'].includes(operation)) {
-          const problem = passwordProblem(args?.data?.password)
+          const problem = passwordProblem((args as { data?: { password?: unknown } })?.data?.password)
           if (problem) throw new APIError(problem, 400, undefined, true)
         }
         return args
