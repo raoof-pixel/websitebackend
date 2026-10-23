@@ -18,7 +18,7 @@ import { legacyHtmlFields } from '../fields/legacyHtml'
 import { articleEditor } from '../fields/richText'
 import { slug } from '../fields/slug'
 import { wpId } from '../fields/wordpress'
-import { getSiteURL, notifyFrontend, paths } from '../utilities/revalidate'
+import { getWebsiteURL, notifyFrontend, paths } from '../utilities/revalidate'
 import { htmlToText, lexicalToText, readingMinutes } from '../utilities/text'
 
 const idOf = (v: unknown) => (v && typeof v === 'object' ? (v as { id: unknown }).id : v)
@@ -74,6 +74,9 @@ const revalidateAfterChange: CollectionAfterChangeHook = async ({ doc, previousD
   const wasPublished = previousDoc?._status === 'published'
   const isPublished = doc._status === 'published'
   if (!wasPublished && !isPublished) return doc // draft-only edits don't affect the website
+  // Autosaves and "Save draft" on a published article only change the draft, not the live page.
+  const q = (req.query || {}) as Record<string, unknown>
+  if (!isPublished && (q.autosave === 'true' || q.draft === 'true')) return doc
 
   const pathList = new Set<string>()
   if (isPublished) pathList.add(paths.post(doc.slug)!)
@@ -116,13 +119,8 @@ export const Posts: CollectionConfig = {
     listSearchableFields: ['title', 'slug', 'excerpt'],
     group: 'Content',
     pagination: { defaultLimit: 25 },
-    preview: (doc) => {
-      const secret = process.env.PREVIEW_SECRET
-      const slugValue = typeof doc?.slug === 'string' ? doc.slug : ''
-      if (!secret || !slugValue) return null
-      const params = new URLSearchParams({ secret, path: `/${slugValue}/`, collection: 'posts' })
-      return `${getSiteURL()}/api/preview?${params.toString()}`
-    },
+    // "Preview" button: the latest draft in the real website design (see endpoints/sitePreview).
+    preview: (doc) => (doc?.id ? `/api/site-preview?collection=posts&id=${doc.id}` : null),
   },
   // What a post looks like when it's referenced from another document (e.g. related posts).
   defaultPopulate: {
@@ -216,6 +214,16 @@ export const Posts: CollectionConfig = {
         { name: 'isEditorsPick', type: 'checkbox', label: "Editor's pick", index: true },
         { name: 'isSponsored', type: 'checkbox', label: 'Sponsored' },
       ],
+    },
+    {
+      name: 'viewOnWebsite',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: { path: '/components/ViewOnSite#ViewOnSite', clientProps: { siteURL: getWebsiteURL() } },
+        },
+      },
     },
     {
       name: 'sourceUrl',

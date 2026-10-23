@@ -19,6 +19,7 @@ import { Posts } from './collections/Posts'
 import { Tags } from './collections/Tags'
 import { Users } from './collections/Users'
 import { healthEndpoint, resolveEndpoint } from './endpoints/resolve'
+import { sitePreviewEndpoint } from './endpoints/sitePreview'
 import { wpImportEndpoint } from './endpoints/wpImport'
 import { Navigation, SiteSettings } from './globals/SiteSettings'
 import { getDeploymentURL, getServerURL, getSiteURL } from './utilities/revalidate'
@@ -87,7 +88,7 @@ export default buildConfig({
     abortOnLimit: true,
     safeFileNames: true,
   },
-  endpoints: [resolveEndpoint, healthEndpoint, wpImportEndpoint],
+  endpoints: [resolveEndpoint, healthEndpoint, wpImportEndpoint, sitePreviewEndpoint],
   plugins: [
     seoPlugin({
       collections: ['posts', 'pages', 'categories'],

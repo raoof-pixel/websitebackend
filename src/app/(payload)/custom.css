@@ -391,3 +391,29 @@ html[data-theme='dark'] .pill--style-light-success {
 .csme-theme-toggle__icon {
   font-size: 15px;
 }
+
+/* ---------- "View on website" sidebar buttons ---------- */
+.csme-view-on-site {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0 20px;
+}
+.csme-view-on-site .csme-btn {
+  justify-content: center;
+}
+.csme-btn--outline {
+  border: 1px solid var(--theme-elevation-200);
+  color: var(--theme-text) !important;
+  background: transparent;
+}
+.csme-btn--outline:hover {
+  border-color: var(--csme-lime-strong);
+  background: var(--csme-lime-soft);
+  color: var(--csme-ink) !important;
+}
+.csme-view-on-site__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+}

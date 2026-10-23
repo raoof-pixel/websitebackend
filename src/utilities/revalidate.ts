@@ -61,6 +61,13 @@ export const paths = {
 export const getSiteURL = () =>
   (process.env.NEXT_PUBLIC_SITE_URL || 'https://canadiansme.ca').replace(/\/$/, '')
 
+/**
+ * The website that shows this content (used for "View on website" and draft previews).
+ * While canadiansme.ca still runs on WordPress this is the test copy, e.g.
+ * WEBSITE_URL=https://canadiansme-website.vercel.app
+ */
+export const getWebsiteURL = () => (process.env.WEBSITE_URL || getSiteURL()).replace(/\/$/, '')
+
 /** Where this CMS runs. On Vercel the project's own address is detected automatically. */
 export const getServerURL = () =>
   (
