@@ -77,7 +77,13 @@ jobs:
           if ! ls src/migrations/*.ts >/dev/null 2>&1; then
             pnpm payload migrate:create initial --force-accept-warning 2>&1 | tee ci-output/05-migrate-create.log
           else
-            echo "Migrations already committed: $(ls src/migrations/*.ts | grep -v index.ts | xargs -n1 basename)" | tee ci-output/05-migrate-create.log
+            # Detect schema changes that have no migration yet; keep the file only if it does something.
+            pnpm payload migrate:create schema_update --force-accept-warning 2>&1 | tee ci-output/05-migrate-create.log
+            NEW=$(ls -t src/migrations/*_schema_update.ts 2>/dev/null | head -1)
+            if [ -n "$NEW" ] && ! grep -qE 'ALTER|CREATE|DROP' "$NEW"; then
+              rm -f "$NEW" "${NEW%.ts}.json"; git checkout -- src/migrations/index.ts 2>/dev/null || true
+              echo "No schema changes." | tee -a ci-output/05-migrate-create.log
+            fi
           fi
 
       - name: Run migrations
