@@ -366,3 +366,28 @@ html[data-theme='dark'] .pill--style-light-success {
 .table a {
   font-weight: 500;
 }
+
+/* ---------- Light/dark toggle (top right) ---------- */
+.csme-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--theme-elevation-150);
+  background: var(--theme-elevation-50);
+  color: var(--theme-text);
+  font: 600 13px/1 var(--font-body);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+.csme-theme-toggle:hover {
+  border-color: var(--csme-lime-strong);
+  background: var(--csme-lime);
+  color: var(--csme-ink);
+  transform: translateY(-1px);
+}
+.csme-theme-toggle__icon {
+  font-size: 15px;
+}

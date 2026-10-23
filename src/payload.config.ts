@@ -57,6 +57,7 @@ export default buildConfig({
       },
       beforeLogin: ['/components/BeforeLogin#BeforeLogin'],
       beforeDashboard: ['/components/Dashboard#Dashboard'],
+      actions: ['/components/ThemeToggle#ThemeToggle'],
     },
   },
   collections: [Posts, Pages, Categories, Tags, Authors, Media, Users, AuditLogs],
