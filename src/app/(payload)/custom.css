@@ -121,16 +121,20 @@ html[data-theme='dark'] .btn--style-secondary {
 
 /* ---------- Icon & logo ---------- */
 .csme-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
+  width: 100%;
+  height: 100%;
+  min-width: 22px;
+  min-height: 22px;
+  aspect-ratio: 1;
+  border-radius: 7px;
   display: grid;
   place-items: center;
   background: var(--csme-lime);
   color: var(--csme-ink);
   font-family: 'Sora', sans-serif;
   font-weight: 800;
-  font-size: 17px;
+  font-size: 14px;
+  line-height: 1;
   box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
 }
 
