@@ -20,7 +20,7 @@ import { Tags } from './collections/Tags'
 import { Users } from './collections/Users'
 import { healthEndpoint, resolveEndpoint } from './endpoints/resolve'
 import { Navigation, SiteSettings } from './globals/SiteSettings'
-import { getServerURL, getSiteURL } from './utilities/revalidate'
+import { getDeploymentURL, getServerURL, getSiteURL } from './utilities/revalidate'
 
 // Refuse to start in production with a weak or missing secret (it signs every login).
 const secret = process.env.PAYLOAD_SECRET || ''
@@ -34,15 +34,16 @@ const dirname = path.dirname(filename)
 /** Origins allowed to call the API from a browser (the public website, previews). */
 const allowedOrigins = [
   getServerURL(),
+  getDeploymentURL(),
   getSiteURL(),
   ...(process.env.CORS_ORIGINS || '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),
-]
+].filter(Boolean)
 
 export default buildConfig({
-  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || undefined,
+  serverURL: getServerURL().startsWith('http://localhost') ? undefined : getServerURL(),
   admin: {
     user: Users.slug,
     importMap: { baseDir: path.resolve(dirname) },

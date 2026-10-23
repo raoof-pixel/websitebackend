@@ -61,5 +61,13 @@ export const paths = {
 export const getSiteURL = () =>
   (process.env.NEXT_PUBLIC_SITE_URL || 'https://canadiansme.ca').replace(/\/$/, '')
 
+/** Where this CMS runs. On Vercel the project's own address is detected automatically. */
 export const getServerURL = () =>
-  (process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000').replace(/\/$/, '')
+  (
+    process.env.NEXT_PUBLIC_SERVER_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : '') ||
+    'http://localhost:3000'
+  ).replace(/\/$/, '')
+
+/** This deployment's own address on Vercel (differs per deployment), if any. */
+export const getDeploymentURL = () => (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '')

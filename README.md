@@ -91,8 +91,8 @@ render `legacyHtml` instead.
    (sets `BLOB_READ_WRITE_TOKEN`).
 3. The initial database migration is already in `src/migrations`. The Vercel build (`pnpm run ci`) runs
    migrations, then builds. After changing collections, run `pnpm migrate:create <name>` and commit it.
-4. Scheduled publishing runs via the Vercel Cron in `vercel.json` (needs `CRON_SECRET`; every-5-minute
-   crons need a Vercel Pro plan, otherwise change the schedule).
+4. Scheduled publishing runs via the Vercel Cron in `vercel.json` (needs `CRON_SECRET`). It is set to once a
+   day so it works on Vercel's free plan; on Vercel Pro change the schedule to `*/5 * * * *` for 5-minute precision.
 
 ## Automated tests
 
