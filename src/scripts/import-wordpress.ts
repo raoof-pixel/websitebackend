@@ -102,7 +102,20 @@ const findByWpId = async (payload: Payload, collection: any, id: number) => {
 }
 
 const upsert = async (payload: Payload, collection: any, wpIdValue: number, data: any, draftable = false) => {
-  const existing = await findByWpId(payload, collection, wpIdValue)
+  let existing = await findByWpId(payload, collection, wpIdValue)
+  // Adopt a record someone already created by hand with the same URL slug (no duplicate URLs).
+  if (!existing && data.slug) {
+    const bySlug = await payload.find({
+      collection,
+      where: { and: [{ slug: { equals: data.slug } }, { wpId: { exists: false } }] },
+      limit: 1,
+      depth: 0,
+      draft: true,
+      overrideAccess: true,
+      pagination: false,
+    })
+    existing = (bySlug.docs[0] as any) ?? null
+  }
   const common = { collection, data: { ...data, wpId: wpIdValue }, overrideAccess: true, context: CTX, depth: 0 }
   const opts = draftable ? { ...common, draft: data._status !== 'published' } : common
   if (existing) return payload.update({ ...(opts as any), id: existing.id })
@@ -122,18 +135,23 @@ async function importCategories(payload: Payload) {
   const all: any[] = []
   for await (const c of wpPaged('/wp/v2/categories')) all.push(c)
   for (const c of all) {
-    const doc: any = await upsert(payload, 'categories', c.id, {
-      title: decode(c.name),
-      slug: c.slug,
-      description: decode(c.description) || null,
-    })
-    categoryMap.set(c.id, doc.id)
-    bump('categories')
+    try {
+      const doc: any = await upsert(payload, 'categories', c.id, {
+        title: decode(c.name),
+        slug: c.slug,
+        description: decode(c.description) || null,
+      })
+      categoryMap.set(c.id, doc.id)
+      bump('categories')
+    } catch (err) {
+      bump('categoryErrors')
+      console.error(`  category ${c.id} (${c.slug}) failed: ${(err as Error).message}`)
+    }
   }
   // Second pass: parents (needs every category to exist first).
   for (const c of all.filter((c) => c.parent)) {
     const parentId = categoryMap.get(c.parent)
-    if (parentId) {
+    if (parentId && categoryMap.get(c.id)) {
       await payload.update({
         collection: 'categories',
         id: categoryMap.get(c.id)!,
@@ -149,13 +167,18 @@ async function importCategories(payload: Payload) {
 async function importTags(payload: Payload) {
   let n = 0
   for await (const t of wpPaged('/wp/v2/tags')) {
-    const doc: any = await upsert(payload, 'tags', t.id, {
-      title: decode(t.name),
-      slug: t.slug,
-      description: decode(t.description) || null,
-    })
-    tagMap.set(t.id, doc.id)
-    n++
+    try {
+      const doc: any = await upsert(payload, 'tags', t.id, {
+        title: decode(t.name),
+        slug: t.slug,
+        description: decode(t.description) || null,
+      })
+      tagMap.set(t.id, doc.id)
+      n++
+    } catch (err) {
+      bump('tagErrors')
+      console.error(`  tag ${t.id} (${t.slug}) failed: ${(err as Error).message}`)
+    }
   }
   console.log(`  tags: ${n}`)
 }
@@ -184,8 +207,12 @@ async function importAuthors(payload: Payload) {
   let n = 0
   try {
     for await (const u of wpPaged('/wp/v2/users')) {
-      await importAuthor(payload, u)
-      n++
+      try {
+        await importAuthor(payload, u)
+        n++
+      } catch (err) {
+        console.error(`  author ${u.id} (${u.slug}) failed: ${(err as Error).message}`)
+      }
     }
   } catch (err) {
     console.warn(`  could not list users (${(err as Error).message}); authors will be imported per post`)
