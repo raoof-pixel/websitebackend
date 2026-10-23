@@ -292,6 +292,22 @@ await test('Site settings are readable and admin-only to change', async () => {
   assert(w.status === 403, `author write returned ${w.status}`)
 })
 
+await test('WordPress import endpoint is admin-only', async () => {
+  const pub = await api('/api/wp-import', { method: 'POST', body: { step: 'authors' } })
+  assert(pub.status === 403 || pub.status === 401, `public got ${pub.status}`)
+  const au = await api('/api/wp-import', { method: 'POST', cookie: authorACookie, body: { step: 'authors' } })
+  assert(au.status === 403 || au.status === 401, `author got ${au.status}`)
+  const bot = await api('/api/wp-import', { method: 'POST', apiKey: botKey, body: { step: 'authors' } })
+  assert(bot.status === 403 || bot.status === 401, `automation key got ${bot.status}`)
+})
+
+await test('Admin can run an import step from inside the CMS', async () => {
+  const { status, json } = await api('/api/wp-import', { method: 'POST', cookie: adminCookie, body: { step: 'authors' } })
+  assert(status === 200, `status ${status} ${JSON.stringify(json).slice(0, 300)}`)
+  assert((json.counts?.authors || 0) > 400, `authors imported: ${json.counts?.authors}`)
+  return `${json.counts.authors} authors`
+})
+
 // ---------- report ----------
 const failed = results.filter((r) => !r.ok)
 const lines = [

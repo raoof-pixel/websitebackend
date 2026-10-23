@@ -50,7 +50,7 @@ pnpm import:wp --skip-media     # quick run without downloading images
 - Published content is public via the REST API. To also copy drafts, add a WordPress
   Application Password in `.env` (`WP_USERNAME`, `WP_APP_PASSWORD`).
 - SEO titles/descriptions from All in One SEO are carried over.
-- Author bylines come from `data/wp-authors.json` (public name, slug and website of the 447 WordPress
+- Author bylines come from `src/data/wp-authors.json` (public name, slug and website of the 447 WordPress
   authors, no emails), because the site's user list isn't public.
 - Raw HTML is cleaned on import, so scripts or spam links injected into old posts are not copied over.
 - Each article keeps its original WordPress HTML. If it contains things the editor can't show 1:1

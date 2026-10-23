@@ -17,3 +17,6 @@ export const DELETE = REST_DELETE(config)
 export const PATCH = REST_PATCH(config)
 export const PUT = REST_PUT(config)
 export const OPTIONS = REST_OPTIONS(config)
+
+// Allow long-running requests (e.g. the in-CMS WordPress import) up to 5 minutes.
+export const maxDuration = 300
