@@ -1,0 +1,216 @@
+
+> canadiansme-cms@1.0.0 start /home/runner/work/websitebackend/websitebackend
+> cross-env NODE_OPTIONS=--no-deprecation next start
+
+▲ Next.js 16.4.3
+- Local:         http://localhost:3000
+- Network:       http://10.1.0.207:3000
+✓ Ready in 96ms
+✓ Running next.config.ts took 37ms
+[09:40:56] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+[09:40:56] [31mERROR[39m: [36mPassword must be at least 12 characters.[39m
+    err: {
+      "type": "",
+      "message": "Password must be at least 12 characters.",
+      "stack":
+          APIError: Password must be at least 12 characters.
+              at d.hooks.beforeOperation (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:334:32470)
+              at ti (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:103:37277)
+              at sR (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:141176)
+              at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      "data": null,
+      "isOperational": true,
+      "isPublic": true,
+      "status": 400,
+      "name": "APIError"
+    }
+[09:40:57] [32mINFO[39m: [36mYou are not allowed to perform this action.[39m
+[09:40:57] [31mERROR[39m: [36mPassword must be at least 12 characters.[39m
+    err: {
+      "type": "",
+      "message": "Password must be at least 12 characters.",
+      "stack":
+          APIError: Password must be at least 12 characters.
+              at d.hooks.beforeOperation (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:334:32470)
+              at ti (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:103:37277)
+              at sR (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:141176)
+              at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+              at async ti (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:228573)
+              at async includes.A.handler (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:208262)
+              at async y (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:8358)
+              at async /home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:16760
+              at async r0.renderToResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:14399)
+              at async r0.executeRequest (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:17556)
+      "data": null,
+      "isOperational": true,
+      "isPublic": true,
+      "status": 400,
+      "name": "APIError"
+    }
+[09:40:57] [31mERROR[39m: [36mThe email or password provided is incorrect.[39m
+    err: {
+      "type": "tm",
+      "message": "The email or password provided is incorrect.",
+      "stack":
+          AuthenticationError: The email or password provided is incorrect.
+              at rv (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:26408)
+              at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+              at async R (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:210448)
+              at async includes.A.handler (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:208262)
+              at async y (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:8358)
+              at async /home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:16760
+              at async r0.renderToResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:14399)
+              at async r0.executeRequest (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:17556)
+              at async Z (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/_0p5-ebkg41fwk._.js:1:3378)
+              at async r0.handleResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:1:134324)
+      "data": null,
+      "isOperational": true,
+      "isPublic": true,
+      "status": 401,
+      "name": "AuthenticationError"
+    }
+[09:40:57] [31mERROR[39m: [36mThe email or password provided is incorrect.[39m
+    err: {
+      "type": "tm",
+      "message": "The email or password provided is incorrect.",
+      "stack":
+          AuthenticationError: The email or password provided is incorrect.
+              at rv (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:26408)
+              at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+              at async R (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:210448)
+              at async includes.A.handler (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:208262)
+              at async y (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:8358)
+              at async /home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:16760
+              at async r0.renderToResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:14399)
+              at async r0.executeRequest (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:17556)
+              at async Z (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/_0p5-ebkg41fwk._.js:1:3378)
+              at async r0.handleResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:1:134324)
+      "data": null,
+      "isOperational": true,
+      "isPublic": true,
+      "status": 401,
+      "name": "AuthenticationError"
+    }
+[09:40:58] [31mERROR[39m: [36mThe email or password provided is incorrect.[39m
+    err: {
+      "type": "tm",
+      "message": "The email or password provided is incorrect.",
+      "stack":
+          AuthenticationError: The email or password provided is incorrect.
+              at rv (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:26408)
+              at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+              at async R (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:210448)
+              at async includes.A.handler (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:208262)
+              at async y (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:8358)
+              at async /home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:16760
+              at async r0.renderToResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:14399)
+              at async r0.executeRequest (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:17556)
+              at async Z (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/_0p5-ebkg41fwk._.js:1:3378)
+              at async r0.handleResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:1:134324)
+      "data": null,
+      "isOperational": true,
+      "isPublic": true,
+      "status": 401,
+      "name": "AuthenticationError"
+    }
+[09:40:58] [31mERROR[39m: [36mThe email or password provided is incorrect.[39m
+    err: {
+      "type": "tm",
+      "message": "The email or password provided is incorrect.",
+      "stack":
+          AuthenticationError: The email or password provided is incorrect.
+              at rv (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:26408)
+              at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+              at async R (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:210448)
+              at async includes.A.handler (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:208262)
+              at async y (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:8358)
+              at async /home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:16760
+              at async r0.renderToResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:14399)
+              at async r0.executeRequest (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:17556)
+              at async Z (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/_0p5-ebkg41fwk._.js:1:3378)
+              at async r0.handleResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:1:134324)
+      "data": null,
+      "isOperational": true,
+      "isPublic": true,
+      "status": 401,
+      "name": "AuthenticationError"
+    }
+[09:40:58] [31mERROR[39m: [36mThe email or password provided is incorrect.[39m
+    err: {
+      "type": "tm",
+      "message": "The email or password provided is incorrect.",
+      "stack":
+          AuthenticationError: The email or password provided is incorrect.
+              at rv (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:26408)
+              at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+              at async R (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:210448)
+              at async includes.A.handler (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:208262)
+              at async y (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:8358)
+              at async /home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:16760
+              at async r0.renderToResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:14399)
+              at async r0.executeRequest (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:17556)
+              at async Z (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/_0p5-ebkg41fwk._.js:1:3378)
+              at async r0.handleResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:1:134324)
+      "data": null,
+      "isOperational": true,
+      "isPublic": true,
+      "status": 401,
+      "name": "AuthenticationError"
+    }
+[09:40:58] [31mERROR[39m: [36mThis user is locked due to having too many failed login attempts.[39m
+    err: {
+      "type": "tE",
+      "message": "This user is locked due to having too many failed login attempts.",
+      "stack":
+          LockedAuth: This user is locked due to having too many failed login attempts.
+              at rS (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:24732)
+              at rv (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:26086)
+              at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+              at async R (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:210448)
+              at async includes.A.handler (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:208262)
+              at async y (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:8358)
+              at async /home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:16760
+              at async r0.renderToResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:14399)
+              at async r0.executeRequest (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:17556)
+              at async Z (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/_0p5-ebkg41fwk._.js:1:3378)
+      "data": null,
+      "isOperational": true,
+      "isPublic": true,
+      "status": 401,
+      "name": "LockedAuth"
+    }
+[09:40:58] [31mERROR[39m: [36mThis account can only be used with an API key.[39m
+    err: {
+      "type": "",
+      "message": "This account can only be used with an API key.",
+      "stack":
+          APIError: This account can only be used with an API key.
+              at d.hooks.beforeLogin (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:334:33172)
+              at rv (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:27353)
+              at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+              at async R (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:210448)
+              at async includes.A.handler (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/[root-of-the-server]__1lvzm44-gynio._.js:105:208262)
+              at async y (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:8358)
+              at async /home/runner/work/websitebackend/websitebackend/.next/server/chunks/node_modules__pnpm_0873oel0v8vzf._.js:1:16760
+              at async r0.renderToResponse (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:14399)
+              at async r0.executeRequest (/home/runner/work/websitebackend/websitebackend/node_modules/.pnpm/next@16.4.3_@types+node@22.19.9_react-dom@19.3.1_react@19.3.1__react@19.3.1_sass@1.77.4/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.prod.js:5:17556)
+              at async Z (/home/runner/work/websitebackend/websitebackend/.next/server/chunks/_0p5-ebkg41fwk._.js:1:3378)
+      "data": null,
+      "isOperational": true,
+      "isPublic": true,
+      "status": 403,
+      "name": "APIError"
+    }
+[09:40:58] [32mINFO[39m: [36mYou are not allowed to perform this action.[39m
+[09:40:58] [32mINFO[39m: [36mYou are not allowed to perform this action.[39m
+[09:40:58] [32mINFO[39m: [36mYou are not allowed to perform this action.[39m
+[09:40:58] [32mINFO[39m: [36mYou are not allowed to perform this action.[39m
+[09:40:58] [31mERROR[39m: [36mInvalid MIME type: image/svg+xml., SVG file contains potentially harmful content.[39m
+[09:40:58] [32mINFO[39m: [36mThe following field is invalid: file[39m
+[09:40:58] [31mERROR[39m: [36mFile type text/plain (from extension ) is not allowed.[39m
+[09:40:58] [32mINFO[39m: [36mThe following field is invalid: file[39m
+[09:40:58] [32mINFO[39m: [36mYou are not allowed to perform this action.[39m
+[09:40:58] [32mINFO[39m: [36mYou are not allowed to perform this action.[39m
+[09:40:58] [32mINFO[39m: [36mYou are not allowed to perform this action.[39m
+[09:40:58] [32mINFO[39m: [36mYou are not allowed to perform this action.[39m
+  authors: 447 (from data/wp-authors.json)

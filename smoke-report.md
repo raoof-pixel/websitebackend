@@ -1,0 +1,43 @@
+# Smoke & security test report
+
+39/39 passed
+
+- ✅ Health endpoint responds
+- ✅ Security headers are sent
+- ✅ Weak password is rejected for the first admin
+- ✅ First admin can register with a strong password
+- ✅ Admin can log in (token only in HttpOnly cookie)
+- ✅ Public cannot register new users
+- ✅ Admin creates authors and an automation user
+- ✅ Weak password is rejected when an admin creates a user
+- ✅ Author cannot promote themselves to admin
+- ✅ Account locks after 5 wrong passwords — login with correct password after lockout -> 401
+- ✅ Automation user cannot log in with a password
+- ✅ Admin enables an API key for the automation user
+- ✅ Admin creates a category
+- ✅ Admin publishes an article; injected HTML is cleaned on save
+- ✅ Public can read published articles but not who created them
+- ✅ Drafts are hidden from the public
+- ✅ /api/resolve finds an article by its WordPress-style URL
+- ✅ Automation API key creates articles as drafts only
+- ✅ Automation API key cannot delete articles
+- ✅ Automation API key cannot change or unpublish a published article
+- ✅ Non-admins cannot give themselves an API key
+- ✅ Author cannot edit or delete someone else’s article
+- ✅ Author can create and edit their own article
+- ✅ PNG image upload works
+- ✅ SVG upload is blocked (can carry scripts)
+- ✅ Disguised script upload is blocked
+- ✅ Activity log records actions and is admin-only — 24 entries, actions: update, create, publish, login-failed, login
+- ✅ Activity log cannot be deleted or edited, even by an admin
+- ✅ GraphQL introspection is disabled in production
+- ✅ Requests from other websites are refused CORS access
+- ✅ Site settings are readable and admin-only to change
+- ✅ WordPress import endpoint is admin-only
+- ✅ Admin can run an import step from inside the CMS — 447 authors
+- ✅ Security scan endpoint is admin-only
+- ✅ Security scan flags a seeded spam article — excerpt:script-tag, legacyHtml:spam-link, legacyHtml:suspicious-domain
+- ✅ Security scan flags a redirect to a URL shortener
+- ✅ Security scan of users lists admins and never returns secrets — 3 findings: new-admin, failed-logins, admin-account
+- ✅ Security scan of every other target responds
+- ✅ Security scan admin view is not shown to logged-out visitors

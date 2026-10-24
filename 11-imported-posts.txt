@@ -1,0 +1,24 @@
+                                                                      slug                                                                      |  _status  | use_legacy_html | has_image | authors | cats | html_len 
+------------------------------------------------------------------------------------------------------------------------------------------------+-----------+-----------------+-----------+---------+------+----------
+ security-test-article                                                                                                                          | published | t               | f         |       0 |    1 |      413
+ complexe-desjardins-inaugurates-a-new-art-installation-to-celebrate-its-5oth-anniversary                                                       | published | t               | t         |       1 |    1 |     5201
+ aimia-to-report-third-quarter-2026-results-on-november-6                                                                                       | published | f               | t         |       1 |    1 |     3308
+ meridian-credit-union-named-winner-of-best-digital-transformation-program-canada-in-2026                                                       | published | t               | t         |       1 |    1 |     4674
+ tecsys-named-one-of-the-2026-best-workplaces-in-quebec-for-the-third-consecutive-year                                                          | published | f               | t         |       1 |    1 |     4393
+ allooloo-technologies-corp-launches-ai-agent-products-for-financial-services-agents-know-your-product-and-news                                 | published | f               | t         |       1 |    1 |     7051
+ markel-group-inc-announces-conference-call-date-and-time-2                                                                                     | published | f               | t         |       1 |    1 |     2650
+ brim-financial-partners-with-manulife-bank-on-credit-cards-and-payments-modernization                                                          | published | f               | t         |       1 |    1 |     6780
+ canadian-credit-unions-back-neo-financials-growth-through-185-million-atb-financial-led-facility                                               | published | f               | t         |       1 |    1 |     4194
+ cibc-achieves-top-rating-by-advisors-for-the-11th-year-in-the-2026-investment-executive-report-card-on-banks                                   | published | f               | t         |       1 |    1 |     3659
+ can-your-business-run-without-you-why-it-matters-when-selling                                                                                  | published | f               | t         |       0 |    1 |    11699
+ dext-launches-ai-connector-in-canada-letting-accounting-and-bookkeeping-practices-ask-claude-chatgpt-and-copilot-about-their-own-practice-data | published | f               | t         |       1 |    1 |     6173
+ tucows-announces-timing-for-q3-2026-financial-results-news-release-and-management-commentary                                                   | published | f               | t         |       1 |    1 |     4562
+ groundbreak-ventures-launches-future-of-housing-canada-month-to-drive-tech-innovation-in-real-estate                                           | published | t               | t         |       1 |    1 |     6340
+ deltek-wins-2026-tsia-star-award-for-future-ready-workforce-recognizing-its-investment-in-people-and-customer-enablement-for-the-ai-era        | published | f               | t         |       1 |    1 |     6387
+ meridian-launches-season-3-of-the-small-business-big-impact-podcast-exploring-what-it-takes-for-small-businesses-to-thrive                     | published | t               | t         |       1 |    1 |     7042
+ scanner-seed-article                                                                                                                           | draft     | t               | f         |       0 |    0 |       82
+ newswire-bot-article                                                                                                                           | draft     | f               | f         |       0 |    0 |         
+ author-own-article                                                                                                                             | draft     | f               | f         |       0 |    0 |         
+ secret-draft                                                                                                                                   | draft     | f               | f         |       0 |    0 |         
+(20 rows)
+

@@ -1,0 +1,12 @@
+
+> canadiansme-cms@1.0.0 generate:types /home/runner/work/websitebackend/websitebackend
+> cross-env NODE_OPTIONS=--no-deprecation payload generate:types
+
+[09:40:19] [32mINFO[39m: [36mCompiling TS types for Collections and Globals...[39m
+[09:40:19] [32mINFO[39m: [36mTypes written to /home/runner/work/websitebackend/websitebackend/src/payload-types.ts[39m
+
+> canadiansme-cms@1.0.0 generate:importmap /home/runner/work/websitebackend/websitebackend
+> cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap
+
+Generating import map
+Writing import map to /home/runner/work/websitebackend/websitebackend/src/app/(payload)/admin/importMap.js

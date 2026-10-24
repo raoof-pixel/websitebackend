@@ -1,0 +1,11 @@
+
+> canadiansme-cms@1.0.0 migrate /home/runner/work/websitebackend/websitebackend
+> cross-env NODE_OPTIONS=--no-deprecation payload migrate
+
+[09:40:29] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+[09:40:29] [32mINFO[39m: [36mReading migration files from /home/runner/work/websitebackend/websitebackend/src/migrations[39m
+[09:40:29] [32mINFO[39m: [36mMigrating: 20261023_141538_initial[39m
+[09:40:29] [32mINFO[39m: [36mMigrated:  20261023_141538_initial (123ms)[39m
+[09:40:29] [32mINFO[39m: [36mMigrating: 20261023_190032_schema_update[39m
+[09:40:29] [32mINFO[39m: [36mMigrated:  20261023_190032_schema_update (2ms)[39m
+[09:40:29] [32mINFO[39m: [36mDone.[39m

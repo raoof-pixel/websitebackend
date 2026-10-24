@@ -1,0 +1,11 @@
+
+> canadiansme-cms@1.0.0 payload /home/runner/work/websitebackend/websitebackend
+> cross-env NODE_OPTIONS=--no-deprecation payload migrate:create schema_update --force-accept-warning
+
+[09:40:27] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+[09:40:27] [32mINFO[39m: [36mStarting migration: generating UP statements...[39m
+[09:40:27] [32mINFO[39m: [36mMigration UP complete. Generating DOWN statements...[39m
+[09:40:27] [32mINFO[39m: [36mMigration DOWN statements generation complete.[39m
+[09:40:27] [32mINFO[39m: [36mMigration created at /home/runner/work/websitebackend/websitebackend/src/migrations/20261024_094027_schema_update.ts[39m
+[09:40:27] [32mINFO[39m: [36mDone.[39m
+No schema changes.

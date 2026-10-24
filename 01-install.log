@@ -1,0 +1,46 @@
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +476
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 476, reused 0, downloaded 50, added 28
+Progress: resolved 476, reused 0, downloaded 134, added 66
+Progress: resolved 476, reused 0, downloaded 205, added 115
+Progress: resolved 476, reused 0, downloaded 273, added 146
+Progress: resolved 476, reused 0, downloaded 356, added 192
+Progress: resolved 476, reused 0, downloaded 475, added 428
+Progress: resolved 476, reused 0, downloaded 476, added 476, done
+.../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.18.20/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.28.2/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+.../esbuild@0.28.2/node_modules/esbuild postinstall: Done
+.../esbuild@0.18.20/node_modules/esbuild postinstall: Done
+
+dependencies:
++ @payloadcms/db-postgres 3.92.0
++ @payloadcms/next 3.92.0
++ @payloadcms/plugin-redirects 3.92.0
++ @payloadcms/plugin-seo 3.92.0
++ @payloadcms/richtext-lexical 3.92.0
++ @payloadcms/storage-vercel-blob 3.92.0
++ @payloadcms/ui 3.92.0
++ cross-env 7.0.3
++ graphql 16.14.2
++ jsdom 28.0.0
++ next 16.4.3
++ payload 3.92.0
++ react 19.3.1
++ react-dom 19.3.1
++ sanitize-html 2.17.0
++ sharp 0.35.5
+
+devDependencies:
++ @types/jsdom 21.1.7
++ @types/node 22.19.9
++ @types/react 19.3.0
++ @types/react-dom 19.3.0
++ @types/sanitize-html 2.16.2
++ tsx 4.23.15
++ typescript 5.7.3
+
+Done in 7.9s using pnpm v10.34.8

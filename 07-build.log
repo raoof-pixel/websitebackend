@@ -1,0 +1,33 @@
+
+> canadiansme-cms@1.0.0 build /home/runner/work/websitebackend/websitebackend
+> cross-env NODE_OPTIONS=--no-deprecation next build
+
+▲ Next.js 16.4.3 (Turbopack)
+✓ Running next.config.ts took 32ms
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+- Experiments (use with caution):
+  ⨯ turbopackServerFastRefresh
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 17.3s
+  Running TypeScript ...
+  Finished TypeScript in 4.7s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/4) ...
+  Generating static pages using 3 workers (1/4) 
+  Generating static pages using 3 workers (2/4) 
+  Generating static pages using 3 workers (3/4) 
+✓ Generating static pages using 3 workers (4/4) in 122ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /_not-found
+├ ƒ /admin/[[...segments]]
+├ ƒ /api/[...slug]
+├ ƒ /api/graphql
+└ ƒ /api/graphql-playground
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

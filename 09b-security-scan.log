@@ -1,0 +1,31 @@
+
+> canadiansme-cms@1.0.0 security:scan /home/runner/work/websitebackend/websitebackend
+> cross-env NODE_OPTIONS=--no-deprecation tsx --env-file-if-exists=.env src/scripts/security-scan.ts --out=ci-output
+
+.env not found. Continuing without it.
+.env not found. Continuing without it.
+.env not found. Continuing without it.
+[09:41:03] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+posts: page 1/1, 4 findings so far   
+pages: page 1/1, 4 findings so far   
+categories: page 1/1, 4 findings so far   
+tags: page 1/1, 4 findings so far   
+authors: page 1/5, 4 findings so far   authors: page 2/5, 4 findings so far   authors: page 3/5, 4 findings so far   authors: page 4/5, 4 findings so far   authors: page 5/5, 4 findings so far   
+media: page 1/1, 4 findings so far   
+users: page 1/1, 7 findings so far   
+redirects: page 1/1, 9 findings so far   
+settings: page 1/1, 9 findings so far   
+# Security scan
+
+Scanned: posts 5, pages 0, categories 1, tags 0, authors 447, media 1, users 4, redirects 1, settings 2
+
+| Severity | Findings |
+| --- | ---: |
+| critical | 1 |
+| high | 3 |
+| medium | 4 |
+| low | 1 |
+
+## By rule
+
+- **Script tag** (`script-tag`): 1

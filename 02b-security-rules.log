@@ -1,0 +1,27 @@
+
+> canadiansme-cms@1.0.0 test:security /home/runner/work/websitebackend/websitebackend
+> node --import tsx --test tests/security-rules.test.mjs
+
+✔ every rule is documented with a valid severity (0.85477ms)
+✔ script tags are critical and name the host they load (7.699822ms)
+✔ event handlers and javascript:/vbscript:/data: URLs are found, also when entity-encoded (6.257511ms)
+✔ iframes are only trusted from the sanitizer allow-list (0.441231ms)
+✔ hidden content with links is high, without links low (2.20351ms)
+✔ spam keywords count in links and clusters, not single mentions (0.512748ms)
+✔ obfuscation and redirects (0.480159ms)
+✔ long base64 payloads are reported, inline images are not (0.539769ms)
+✔ IP links, shorteners, cloaked links and link floods (3.344249ms)
+✔ rich-text (Lexical) content: URLs kept raw, typed text escaped (3.776195ms)
+✔ names, text fields and URLs (1.115722ms)
+✔ uploaded files (0.484275ms)
+✔ emails and social links (0.321742ms)
+✔ excerpts are at most 160 characters (0.429994ms)
+✔ malformed markup cannot make the scan slow (260.926773ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 453.727978

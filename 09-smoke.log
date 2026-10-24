@@ -1,0 +1,41 @@
+PASS  Health endpoint responds
+PASS  Security headers are sent
+PASS  Weak password is rejected for the first admin
+PASS  First admin can register with a strong password
+PASS  Admin can log in (token only in HttpOnly cookie)
+PASS  Public cannot register new users
+PASS  Admin creates authors and an automation user
+PASS  Weak password is rejected when an admin creates a user
+PASS  Author cannot promote themselves to admin
+PASS  Account locks after 5 wrong passwords  — login with correct password after lockout -> 401
+PASS  Automation user cannot log in with a password
+PASS  Admin enables an API key for the automation user
+PASS  Admin creates a category
+PASS  Admin publishes an article; injected HTML is cleaned on save
+PASS  Public can read published articles but not who created them
+PASS  Drafts are hidden from the public
+PASS  /api/resolve finds an article by its WordPress-style URL
+PASS  Automation API key creates articles as drafts only
+PASS  Automation API key cannot delete articles
+PASS  Automation API key cannot change or unpublish a published article
+PASS  Non-admins cannot give themselves an API key
+PASS  Author cannot edit or delete someone else’s article
+PASS  Author can create and edit their own article
+PASS  PNG image upload works
+PASS  SVG upload is blocked (can carry scripts)
+PASS  Disguised script upload is blocked
+PASS  Activity log records actions and is admin-only  — 24 entries, actions: update, create, publish, login-failed, login
+PASS  Activity log cannot be deleted or edited, even by an admin
+PASS  GraphQL introspection is disabled in production
+PASS  Requests from other websites are refused CORS access
+PASS  Site settings are readable and admin-only to change
+PASS  WordPress import endpoint is admin-only
+PASS  Admin can run an import step from inside the CMS  — 447 authors
+PASS  Security scan endpoint is admin-only
+PASS  Security scan flags a seeded spam article  — excerpt:script-tag, legacyHtml:spam-link, legacyHtml:suspicious-domain
+PASS  Security scan flags a redirect to a URL shortener
+PASS  Security scan of users lists admins and never returns secrets  — 3 findings: new-admin, failed-logins, admin-account
+PASS  Security scan of every other target responds
+PASS  Security scan admin view is not shown to logged-out visitors
+
+39/39 passed

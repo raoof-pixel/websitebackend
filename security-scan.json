@@ -1,0 +1,140 @@
+{
+  "generatedAt": "2026-10-24T09:41:03.850Z",
+  "durationMs": 250,
+  "scanned": {
+    "posts": 5,
+    "pages": 0,
+    "categories": 1,
+    "tags": 0,
+    "authors": 447,
+    "media": 1,
+    "users": 4,
+    "redirects": 1,
+    "settings": 2
+  },
+  "summary": {
+    "total": 9,
+    "bySeverity": {
+      "critical": 1,
+      "high": 3,
+      "medium": 4,
+      "low": 1
+    },
+    "byRule": {
+      "script-tag": 1,
+      "untrusted-embed": 1,
+      "spam-link": 1,
+      "suspicious-domain": 1,
+      "new-admin": 1,
+      "failed-logins": 1,
+      "admin-account": 1,
+      "suspicious-redirect": 1,
+      "spam-redirect-path": 1
+    }
+  },
+  "findings": [
+    {
+      "collection": "posts",
+      "id": 5,
+      "title": "Scanner Seed Article",
+      "slug": "scanner-seed-article",
+      "field": "excerpt",
+      "rule": "script-tag",
+      "severity": "critical",
+      "excerpt": "<script>",
+      "count": 1,
+      "adminUrl": "/admin/collections/posts/5"
+    },
+    {
+      "collection": "posts",
+      "id": 1,
+      "title": "Security Test Article",
+      "slug": "security-test-article",
+      "field": "legacyHtml",
+      "rule": "untrusted-embed",
+      "severity": "high",
+      "excerpt": "<iframe loading=\"lazy\" referrerpolicy=\"strict-origin-when-cross-origin\">",
+      "count": 1,
+      "adminUrl": "/admin/collections/posts/1"
+    },
+    {
+      "collection": "posts",
+      "id": 5,
+      "title": "Scanner Seed Article",
+      "slug": "scanner-seed-article",
+      "field": "legacyHtml",
+      "rule": "spam-link",
+      "severity": "high",
+      "excerpt": "buy viagra online → https://cheap-pills.xyz/viagra",
+      "count": 1,
+      "adminUrl": "/admin/collections/posts/5"
+    },
+    {
+      "collection": "posts",
+      "id": 5,
+      "title": "Scanner Seed Article",
+      "slug": "scanner-seed-article",
+      "field": "legacyHtml",
+      "rule": "suspicious-domain",
+      "severity": "medium",
+      "excerpt": "buy viagra online → https://cheap-pills.xyz/viagra",
+      "count": 1,
+      "adminUrl": "/admin/collections/posts/5"
+    },
+    {
+      "collection": "users",
+      "id": 1,
+      "title": "Test Admin <admin@example.com>",
+      "field": "createdAt",
+      "rule": "new-admin",
+      "severity": "medium",
+      "excerpt": "admin@example.com created 2026-10-24",
+      "count": 1,
+      "adminUrl": "/admin/collections/users/1"
+    },
+    {
+      "collection": "audit-logs",
+      "id": "",
+      "title": "author.b@example.com",
+      "field": "userEmail",
+      "rule": "failed-logins",
+      "severity": "medium",
+      "excerpt": "6 failed logins for author.b@example.com in the last 7 days",
+      "count": 6,
+      "adminUrl": "/admin/collections/audit-logs?where[action][equals]=login-failed&where[userEmail][equals]=author.b%40example.com"
+    },
+    {
+      "collection": "users",
+      "id": 1,
+      "title": "Test Admin <admin@example.com>",
+      "field": "roles",
+      "rule": "admin-account",
+      "severity": "low",
+      "excerpt": "admin@example.com — roles: admin — created 2026-10-24",
+      "count": 1,
+      "adminUrl": "/admin/collections/users/1"
+    },
+    {
+      "collection": "redirects",
+      "id": 1,
+      "title": "/cheap-viagra-online/",
+      "field": "to.url",
+      "rule": "suspicious-redirect",
+      "severity": "high",
+      "excerpt": "/cheap-viagra-online/ → https://bit.ly/abc123 (Shortened link)",
+      "count": 1,
+      "adminUrl": "/admin/collections/redirects/1"
+    },
+    {
+      "collection": "redirects",
+      "id": 1,
+      "title": "/cheap-viagra-online/",
+      "field": "from",
+      "rule": "spam-redirect-path",
+      "severity": "medium",
+      "excerpt": "/cheap-viagra-online/",
+      "count": 1,
+      "adminUrl": "/admin/collections/redirects/1"
+    }
+  ]
+}

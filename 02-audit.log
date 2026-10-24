@@ -1,0 +1,30 @@
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ high                │ Happy DOM: Incomplete fix for CVE-2026-33943:          │
+│                     │ unsanitized import alias leads to host code execution  │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Package             │ happy-dom                                              │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Vulnerable versions │ >=17.0.0 <=21.0.3                                      │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Patched versions    │ >=21.0.4                                               │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ Paths               │ .>@payloadcms/richtext-lexical>@lexical/               │
+│                     │ headless>happy-dom                                     │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ More info           │ https://github.com/advisories/GHSA-834v-8h66-3h79      │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+7 vulnerabilities found
+Severity: 6 moderate | 1 high
+::warning title=high vulnerability in happy-dom::Happy DOM: Incomplete fix for CVE-2026-33943: unsanitized import alias leads to host code execution (fixed in >=21.0.4) https://github.com/advisories/GHSA-834v-8h66-3h79
+## Dependency audit (`pnpm audit --prod`)
+
+| Critical | High | Moderate | Low |
+| ---: | ---: | ---: | ---: |
+| 0 | 1 | 6 | 0 |
+
+| Severity | Package | Problem | Fixed in |
+| --- | --- | --- | --- |
+| **high** | `happy-dom` | [Happy DOM: Incomplete fix for CVE-2026-33943: unsanitized import alias leads to host code execution](https://github.com/advisories/GHSA-834v-8h66-3h79) | >=21.0.4 |
+
+Fix: `pnpm up <package>` (or add a `pnpm.overrides` entry in package.json), then re-run CI.
+
