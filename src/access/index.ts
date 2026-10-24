@@ -37,14 +37,16 @@ export const canCreateContent: Access = ({ req }) =>
   hasRole(userOf(req), 'admin', 'editor', 'author', 'automation')
 
 /**
- * Update: admins/editors everything; automation everything it may create (articles);
- * authors only documents they created themselves.
+ * Update: admins/editors everything; authors and automation only documents they created
+ * themselves (automation additionally can't change published articles, see Posts hooks).
  */
 export const canUpdateOwnOrAll: Access = ({ req }) => {
   const user = userOf(req)
   if (!user) return false
-  if (hasRole(user, 'admin', 'editor', 'automation')) return true
-  if (hasRole(user, 'author')) return { createdBy: { equals: user.id } }
+  if (hasRole(user, 'admin', 'editor')) return true
+  // Authors and automation bots (API keys) may only change what they created themselves,
+  // so a leaked bot key can't touch the rest of the archive.
+  if (hasRole(user, 'author', 'automation')) return { createdBy: { equals: user.id } }
   return false
 }
 

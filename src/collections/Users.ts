@@ -111,6 +111,16 @@ export const Users: CollectionConfig = {
           const { totalDocs } = await req.payload.count({ collection: 'users', overrideAccess: true, req })
           if (totalDocs === 0) data.roles = ['admin']
         }
+        // Only admins can turn on, change or remove API keys. Otherwise a stolen login cookie could be
+        // turned into a permanent key that survives logout and lockout.
+        if (operation === 'update' && !hasRole(req.user as never, 'admin')) {
+          for (const k of ['enableAPIKey', 'apiKey', 'apiKeyIndex'] as const) {
+            if (k in data) {
+              if (originalDoc && k in originalDoc) data[k] = originalDoc[k]
+              else delete data[k]
+            }
+          }
+        }
         // Never let the last admin lose the admin role (avoids locking everyone out).
         if (operation === 'update' && hasRole(originalDoc, 'admin') && Array.isArray(data.roles) && !data.roles.includes('admin')) {
           const { totalDocs } = await req.payload.count({

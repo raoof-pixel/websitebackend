@@ -4,6 +4,7 @@ import type {
   CollectionBeforeChangeHook,
   CollectionConfig,
 } from 'payload'
+import { APIError } from 'payload'
 
 import {
   authenticatedField,
@@ -29,6 +30,10 @@ const prepare: CollectionBeforeChangeHook = async ({ data, operation, originalDo
 
   // Bots can only save drafts for a person to review, unless explicitly allowed.
   if (isAutomationOnly(user as never) && process.env.AUTOMATION_CAN_PUBLISH !== 'true') {
+    // ...and can't edit (and so silently unpublish) an article that is already live.
+    if (operation === 'update' && originalDoc?._status === 'published') {
+      throw new APIError('Automation accounts cannot change published articles.', 403, undefined, true)
+    }
     data._status = 'draft'
   }
 
