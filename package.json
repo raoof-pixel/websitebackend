@@ -17,6 +17,8 @@
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "import:wp": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file-if-exists=.env src/scripts/import-wordpress.ts",
+    "security:scan": "cross-env NODE_OPTIONS=--no-deprecation tsx --env-file-if-exists=.env src/scripts/security-scan.ts",
+    "test:security": "node --import tsx --test tests/security-rules.test.mjs",
     "typecheck": "tsc --noEmit",
     "audit": "pnpm audit --prod"
   },

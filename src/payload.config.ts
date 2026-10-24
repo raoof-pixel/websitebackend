@@ -19,6 +19,7 @@ import { Posts } from './collections/Posts'
 import { Tags } from './collections/Tags'
 import { Users } from './collections/Users'
 import { healthEndpoint, resolveEndpoint } from './endpoints/resolve'
+import { securityScanEndpoint } from './endpoints/securityScan'
 import { sitePreviewEndpoint } from './endpoints/sitePreview'
 import { wpImportEndpoint } from './endpoints/wpImport'
 import { Navigation, SiteSettings } from './globals/SiteSettings'
@@ -59,6 +60,16 @@ export default buildConfig({
       beforeLogin: ['/components/BeforeLogin#BeforeLogin'],
       beforeDashboard: ['/components/Dashboard#Dashboard'],
       actions: ['/components/ThemeToggle#ThemeToggle'],
+      afterNavLinks: ['/components/SecurityNavLink#SecurityNavLink'],
+      views: {
+        // /admin/security: page-by-page security scan of all content (admins only, read-only).
+        securityScan: {
+          Component: '/components/SecurityScanView#SecurityScanView',
+          path: '/security',
+          exact: true,
+          meta: { title: 'Security scan' },
+        },
+      },
     },
   },
   collections: [Posts, Pages, Categories, Tags, Authors, Media, Users, AuditLogs],
@@ -88,7 +99,7 @@ export default buildConfig({
     abortOnLimit: true,
     safeFileNames: true,
   },
-  endpoints: [resolveEndpoint, healthEndpoint, wpImportEndpoint, sitePreviewEndpoint],
+  endpoints: [resolveEndpoint, healthEndpoint, wpImportEndpoint, sitePreviewEndpoint, securityScanEndpoint],
   plugins: [
     seoPlugin({
       collections: ['posts', 'pages', 'categories'],

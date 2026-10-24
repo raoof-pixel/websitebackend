@@ -59,7 +59,17 @@ jobs:
 
       - name: Dependency vulnerability audit
         continue-on-error: true
-        run: pnpm audit --prod --audit-level high 2>&1 | tee ci-output/02-audit.log
+        run: |
+          pnpm audit --prod --audit-level high 2>&1 | tee ci-output/02-audit.log || true
+          pnpm audit --prod --json > ci-output/02-audit.json 2>/dev/null || true
+          # High/critical advisories appear in the job summary and as annotations (does not fail CI;
+          # the weekly security workflow fails on them).
+          node .github/scripts/audit-summary.mjs ci-output/02-audit.json | tee -a ci-output/02-audit.log
+
+      - name: Security scanner rule tests
+        run: |
+          set -o pipefail
+          pnpm test:security 2>&1 | tee ci-output/02b-security-rules.log
 
       - name: Generate types and import map
         run: |
@@ -102,6 +112,13 @@ jobs:
           NODE_ENV=production pnpm start > ci-output/08-server.log 2>&1 &
           for i in $(seq 1 60); do curl -sf http://localhost:3000/api/health && break; sleep 2; done
           BASE_URL=http://localhost:3000 node tests/smoke.mjs 2>&1 | tee ci-output/09-smoke.log
+
+      - name: Security scan of the test database (report only)
+        if: always()
+        continue-on-error: true
+        run: |
+          pnpm security:scan --out=ci-output 2>&1 | tee ci-output/09b-security-scan.log
+          if [ -f ci-output/security-scan.md ]; then cat ci-output/security-scan.md >> "$GITHUB_STEP_SUMMARY"; fi
 
       - name: Test WordPress import (read-only, newest 15 articles)
         if: always()

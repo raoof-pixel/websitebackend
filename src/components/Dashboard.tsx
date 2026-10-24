@@ -58,6 +58,11 @@ export const Dashboard = async ({ payload, user }: Props) => {
               Activity log
             </Link>
           )}
+          {isAdmin && (
+            <Link className="csme-btn csme-btn--ghost" href="/admin/security">
+              Security scan
+            </Link>
+          )}
         </div>
       </div>
       <div className="csme-dash__stats">

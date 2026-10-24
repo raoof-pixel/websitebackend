@@ -35,6 +35,8 @@ import { Icon as Icon_a02a4abfb5c9da17149cbadc8057c129 } from '../../../componen
 import { Logo as Logo_919492c8e60179286a0f183c0a5b652e } from '../../../components/Logo'
 import { Dashboard as Dashboard_9a680279bc487e655cb510fd8d9dadff } from '../../../components/Dashboard'
 import { BeforeLogin as BeforeLogin_01d809f8b80f9b2f728eaaa8a4fcc420 } from '../../../components/BeforeLogin'
+import { SecurityScanView as SecurityScanView_902f6bc781f37aeabfd69c83ddc69b3a } from '../../../components/SecurityScanView'
+import { SecurityNavLink as SecurityNavLink_1ec815479a494623b1a20833b5c06907 } from '../../../components/SecurityNavLink'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
 
@@ -77,6 +79,8 @@ export const importMap = {
   "/components/Logo#Logo": Logo_919492c8e60179286a0f183c0a5b652e,
   "/components/Dashboard#Dashboard": Dashboard_9a680279bc487e655cb510fd8d9dadff,
   "/components/BeforeLogin#BeforeLogin": BeforeLogin_01d809f8b80f9b2f728eaaa8a4fcc420,
+  "/components/SecurityScanView#SecurityScanView": SecurityScanView_902f6bc781f37aeabfd69c83ddc69b3a,
+  "/components/SecurityNavLink#SecurityNavLink": SecurityNavLink_1ec815479a494623b1a20833b5c06907,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e
 }

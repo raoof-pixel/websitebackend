@@ -1,0 +1,95 @@
+name: Security
+
+# Code-level security checks, on every push to main, weekly (Mondays 07:17 UTC) and on demand:
+#   1. Secrets scan of the whole git history with gitleaks (official action).
+#   2. A simple grep for high-signal secret patterns in the current files (works even if the
+#      gitleaks action is unavailable).
+#   3. Dependency audit: high/critical advisories fail this workflow and are listed in the summary.
+#   4. Unit tests for the content security scanner rules (src/security/rules.ts).
+# The content scan itself (articles, users, redirects...) runs in the admin at /admin/security
+# and against the test database in ci.yml.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks:
+    name: Secrets scan (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Only needed if the repository belongs to a GitHub organization (free for personal accounts).
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: 'false'
+
+  secrets-grep:
+    name: Secrets scan (pattern fallback)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Look for committed keys and passwords
+        run: |
+          # High-signal patterns only. Placeholders from .env.example and the CI test database are ignored.
+          PATTERNS='AKIA[0-9A-Z]{16}|-----BEGIN ([A-Z]+ )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{40,}|sk_live_[0-9a-zA-Z]{20,}|xox[baprs]-[0-9A-Za-z-]{10,}|AIza[0-9A-Za-z_-]{35}|vercel_blob_rw_[A-Za-z0-9]{16,}|npm_[A-Za-z0-9]{36}|[0-9a-f]{32}-us[0-9]{1,2}\b|postgres(ql)?://[^:/\s]+:[^@\s]+@[^\s"'"'"']+'
+          git ls-files -z | grep -zv -E '^(pnpm-lock\.yaml|src/migrations/.*\.json)$' \
+            | xargs -0 grep -HnIE "$PATTERNS" 2>/dev/null \
+            | grep -vE 'user:password@ep-xxxx|payload:payload@localhost|postgres(ql)?://[^:]+:\$\{' > found.txt || true
+          if [ -s found.txt ]; then
+            echo "## Possible secrets committed" >> "$GITHUB_STEP_SUMMARY"
+            # Show file and line only, never the matched value.
+            cut -d: -f1,2 found.txt | sed 's/^/- /' >> "$GITHUB_STEP_SUMMARY"
+            cut -d: -f1,2 found.txt | while IFS=: read -r f l; do echo "::error file=$f,line=$l::Possible secret committed. Remove it, rotate the key, and use an environment variable."; done
+            exit 1
+          fi
+          echo "No secret patterns found." >> "$GITHUB_STEP_SUMMARY"
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Audit production dependencies
+        run: |
+          # pnpm audit only needs the lockfile, no install.
+          pnpm audit --prod --json > audit.json 2>/dev/null || true
+          node .github/scripts/audit-summary.mjs audit.json --fail-on=high
+
+  rules:
+    name: Scanner rule tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:security

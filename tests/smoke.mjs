@@ -215,6 +215,25 @@ await test('Automation API key cannot delete articles', async () => {
   assert(still.status === 200, 'article was deleted')
 })
 
+await test('Automation API key cannot change or unpublish a published article', async () => {
+  const upd = await api(`/api/posts/${ids.post}`, { method: 'PATCH', apiKey: botKey, body: { title: 'Bot edit' } })
+  assert([401, 403, 404].includes(upd.status), `bot update returned ${upd.status}`)
+  const still = await api(`/api/posts/${ids.post}`)
+  assert(still.status === 200 && still.json._status === 'published' && still.json.title !== 'Bot edit', 'published article was changed by the bot')
+  const own = await api(`/api/posts/${ids.botPost}`, { method: 'PATCH', apiKey: botKey, body: { title: 'Newswire Bot Article (edited)' } })
+  assert(own.status === 200, `bot could not edit its own draft: ${own.status}`)
+})
+
+await test('Non-admins cannot give themselves an API key', async () => {
+  const me = await api('/api/users/me', { cookie: authorACookie })
+  const id = me.json?.user?.id
+  assert(id, 'could not read author account')
+  const key = 'self-issued-key-0123456789abcdef'
+  await api(`/api/users/${id}`, { method: 'PATCH', cookie: authorACookie, body: { enableAPIKey: true, apiKey: key } })
+  const viaKey = await api('/api/users/me', { apiKey: key })
+  assert(!viaKey.json?.user, 'self-issued API key works')
+})
+
 await test('Author cannot edit or delete someone else’s article', async () => {
   const upd = await api(`/api/posts/${ids.post}`, { method: 'PATCH', cookie: authorACookie, body: { title: 'Hacked' } })
   assert(upd.status === 403 || upd.status === 404, `update returned ${upd.status}`)
@@ -306,6 +325,95 @@ await test('Admin can run an import step from inside the CMS', async () => {
   assert(status === 200, `status ${status} ${JSON.stringify(json).slice(0, 300)}`)
   assert((json.counts?.authors || 0) > 400, `authors imported: ${json.counts?.authors}`)
   return `${json.counts.authors} authors`
+})
+
+// ---------- security scanner ----------
+await test('Security scan endpoint is admin-only', async () => {
+  const pub = await api('/api/security-scan', { method: 'POST', body: { target: 'posts' } })
+  assert(pub.status === 401 || pub.status === 403, `public got ${pub.status}`)
+  const au = await api('/api/security-scan', { method: 'POST', cookie: authorACookie, body: { target: 'posts' } })
+  assert(au.status === 403 || au.status === 401, `author got ${au.status}`)
+  const bot = await api('/api/security-scan', { method: 'POST', apiKey: botKey, body: { target: 'posts' } })
+  assert(bot.status === 403 || bot.status === 401, `automation key got ${bot.status}`)
+  const bad = await api('/api/security-scan', { method: 'POST', cookie: adminCookie, body: { target: 'nope' } })
+  assert(bad.status === 400, `unknown target got ${bad.status}`)
+})
+
+// Spam links are ordinary <a href> links, so they survive the HTML cleaner; the excerpt is
+// plain text and is not cleaned. Both must be reported by the scanner.
+const spamHtml = '<p>Great deals: <a href="https://cheap-pills.xyz/viagra">buy viagra online</a></p>'
+await test('Security scan flags a seeded spam article', async () => {
+  const c = await api('/api/posts', {
+    method: 'POST',
+    cookie: adminCookie,
+    body: { title: 'Scanner Seed Article', excerpt: 'Hi <script>alert(1)</script>', legacyHtml: spamHtml, useLegacyHtml: true, _status: 'draft' },
+  })
+  assert(c.status === 201, `create ${c.status} ${JSON.stringify(c.json).slice(0, 200)}`)
+  ids.spamPost = c.json.doc.id
+  const found = []
+  let page = 1
+  let totalPages = 1
+  do {
+    const { status, json } = await api('/api/security-scan', { method: 'POST', cookie: adminCookie, body: { target: 'posts', page, perPage: 25 } })
+    assert(status === 200, `page ${page}: ${status} ${JSON.stringify(json).slice(0, 200)}`)
+    assert(json.target === 'posts' && json.page === page, `bad echo ${JSON.stringify(json).slice(0, 200)}`)
+    assert(Number.isInteger(json.totalPages) && Number.isInteger(json.scanned) && Array.isArray(json.findings), 'bad shape')
+    for (const f of json.findings) {
+      for (const k of ['collection', 'id', 'title', 'field', 'rule', 'severity', 'excerpt', 'adminUrl']) assert(k in f, `finding without ${k}`)
+      assert(['critical', 'high', 'medium', 'low'].includes(f.severity), `severity ${f.severity}`)
+      assert(f.excerpt.length <= 160, `excerpt too long (${f.excerpt.length})`)
+    }
+    found.push(...json.findings.filter((f) => String(f.id) === String(ids.spamPost)))
+    totalPages = json.totalPages
+    page++
+  } while (page <= totalPages && page < 50)
+  const rules = new Set(found.map((f) => `${f.field}:${f.rule}`))
+  assert(rules.has('legacyHtml:spam-link'), `spam link not flagged (got ${[...rules].join(', ')})`)
+  assert(rules.has('excerpt:script-tag'), `script in excerpt not flagged (got ${[...rules].join(', ')})`)
+  assert(found.every((f) => f.adminUrl.endsWith(`/collections/posts/${ids.spamPost}`)), 'wrong adminUrl')
+  return [...rules].join(', ')
+})
+
+await test('Security scan flags a redirect to a URL shortener', async () => {
+  const r = await api('/api/redirects', {
+    method: 'POST',
+    cookie: adminCookie,
+    body: { from: '/cheap-viagra-online/', to: { type: 'custom', url: 'https://bit.ly/abc123' }, type: '301' },
+  })
+  assert(r.status === 201, `create redirect ${r.status} ${JSON.stringify(r.json).slice(0, 200)}`)
+  const { status, json } = await api('/api/security-scan', { method: 'POST', cookie: adminCookie, body: { target: 'redirects' } })
+  assert(status === 200, `scan ${status}`)
+  const mine = json.findings.filter((f) => String(f.id) === String(r.json.doc.id)).map((f) => f.rule)
+  assert(mine.includes('suspicious-redirect'), `got ${mine.join(', ')}`)
+  assert(mine.includes('spam-redirect-path'), `got ${mine.join(', ')}`)
+})
+
+await test('Security scan of users lists admins and never returns secrets', async () => {
+  const { status, json } = await api('/api/security-scan', { method: 'POST', cookie: adminCookie, body: { target: 'users' } })
+  assert(status === 200, `scan ${status}`)
+  const text = JSON.stringify(json)
+  assert(json.findings.some((f) => f.rule === 'admin-account' && f.title.includes(ADMIN.email)), 'admin not listed')
+  assert(!text.includes(botKey), 'API key leaked')
+  for (const k of ['"hash"', '"salt"', '"apiKey"', '"resetPasswordToken"', '"sessions"']) assert(!text.includes(k), `${k} leaked`)
+  // Author B was locked out by the lockout test above.
+  return `${json.findings.length} findings: ${[...new Set(json.findings.map((f) => f.rule))].join(', ')}`
+})
+
+await test('Security scan of every other target responds', async () => {
+  for (const target of ['pages', 'categories', 'tags', 'authors', 'media', 'settings']) {
+    const { status, json } = await api('/api/security-scan', { method: 'POST', cookie: adminCookie, body: { target, perPage: 100 } })
+    assert(status === 200 && Array.isArray(json.findings), `${target}: ${status} ${JSON.stringify(json).slice(0, 200)}`)
+  }
+  const rep = await api('/api/security-scan', { method: 'POST', cookie: adminCookie, body: { target: 'report', summary: { critical: 1, high: 2 } } })
+  assert(rep.status === 200, `report ${rep.status}`)
+})
+
+await test('Security scan admin view is not shown to logged-out visitors', async () => {
+  const res = await fetch(`${BASE}/admin/security`, { redirect: 'manual' })
+  const body = res.status === 200 ? await res.text() : ''
+  assert(res.status !== 200 || !body.includes('csme-sec__targets'), `anonymous visitor saw the scanner (status ${res.status})`)
+  const adm = await fetch(`${BASE}/admin/security`, { headers: { cookie: adminCookie } })
+  assert(adm.status === 200, `admin got ${adm.status}`)
 })
 
 // ---------- report ----------

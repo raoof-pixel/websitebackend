@@ -1,5 +1,7 @@
 import sanitize from 'sanitize-html'
 
+import { ALLOWED_IFRAME_HOSTS } from './iframeHosts'
+
 /**
  * Server-side HTML cleaning. Every piece of raw HTML stored in the CMS (imported WordPress
  * content, "Custom HTML" blocks, the article footer) goes through this before it is saved,
@@ -10,31 +12,8 @@ import sanitize from 'sanitize-html'
  * cleaning on import stops it being copied over.
  *
  * Uses sanitize-html (pure JavaScript, allow-list based) so it runs on any serverless runtime.
+ * Only iframes from the hosts in utilities/iframeHosts.ts survive.
  */
-
-/** Only iframes from these hosts survive (videos, maps, podcasts, forms). */
-const ALLOWED_IFRAME_HOSTS = [
-  'www.youtube.com',
-  'youtube.com',
-  'www.youtube-nocookie.com',
-  'player.vimeo.com',
-  'www.google.com',
-  'maps.google.com',
-  'docs.google.com',
-  'open.spotify.com',
-  'w.soundcloud.com',
-  'www.linkedin.com',
-  'embed.podcasts.apple.com',
-  'www.facebook.com',
-  'platform.twitter.com',
-  'www.instagram.com',
-  'player.simplecast.com',
-  'www.buzzsprout.com',
-  'anchor.fm',
-  'podcasters.spotify.com',
-  'canadiansme.ca',
-  'www.canadiansme.ca',
-]
 
 const OPTIONS: sanitize.IOptions = {
   allowedTags: [
